@@ -51,12 +51,17 @@ let Tile = React.createClass({
 			this.props.reEnableScrollingDetectionRef();
 		}
 	},
+	_createArticleMarkup: function() { 
+		let tile = this;
+		return {__html: tile.props.dataToDisplay}; 
+	},
 	render: function() {
 		let classNames = (this.props.index === this.props.minIndex?"content-tile first":(this.props.jumpToContentIndex === this.props.contentIndex?"content-tile jumped":"content-tile"));
 
 		return (
 			<div className={classNames}>
-				<p>#T{this.props.index} : #C{this.props.contentIndex} {this.props.dataToDisplay}</p>
+				<p>#T{this.props.index} : #C{this.props.contentIndex}</p>
+				<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
 				<JumpButton rangeContentMin={this.props.minIndex - 100} rangeContentMax={this.props.maxIndex + 100} jumpToContentCTARef={this.props.jumpToContentCTARef}/>
 			</div>
 		);
