@@ -17,16 +17,17 @@ let Tiles = React.createClass({
 		  // we cannot both update the state and take action - otherwise the state used after the action will not be refreshed to what we expect
 		  isInSensitiveZone_actionTaken: true,
 		  jumpToContentIndex: null,
-		  mappingContentToTile: [],
-		  // scrollDetectionEnabled: true
+		  mappingContentToTile: []
 		}
 	},
 	componentDidMount: function(){
 		tilesStore.addChangeListener(this._onTilesDataChanged);
-		tilesActions.addTileDown();
+		// tilesActions.addTileDown();
 		this.currentRoute = this.props.location.pathname;
+		console.log('current route is ' + this.currentRoute);
 		this.scrollDetectionEnabled = true;
 		console.log('enabling scroll detection.');
+		this._onRouteChanged(true);
 	},
 	componentWillUnmount: function(){
 		tilesStore.removeChangeListener(this._onTilesDataChanged);
@@ -41,12 +42,21 @@ let Tiles = React.createClass({
 		}
 
 		if (this.props.location.pathname !== this.currentRoute) {
-			console.log('route has changed. display the one tile content.');
-			this.currentRoute = this.props.location.pathname;
-			this.scrollDetectionEnabled = false;
-			console.log('disabling scroll detection.');
-			tilesActions.addFirstTile(this.props.location.pathname);
+			this._onRouteChanged(false);
 		}
+	},
+	_onRouteChanged: function(firstCall){
+		let tilesList = this;
+		console.log('route has changed. display the one tile content.');
+		tilesList.currentRoute = tilesList.props.location.pathname;
+		console.log('current route is ' + tilesList.currentRoute);
+
+		if (!firstCall) {
+			tilesList.scrollDetectionEnabled = false;
+			console.log('disabling scroll detection.');
+		}
+		
+		tilesActions.addFirstTile(tilesList.props.location.pathname);
 	},
 	_onTilesDataChanged: function(){
 		let tilesList = this;
