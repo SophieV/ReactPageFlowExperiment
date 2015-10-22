@@ -276,7 +276,7 @@ gulp.task('wiredep', () => {
 
 gulp.task('deploy', ['build'], () => {
   return gulp.src(`${path.DEST}/**/*`)
-    .pipe($.ghPages());
+    .pipe($.ghPages('git@github.com:sophiev/ReactPageFlowExperiment'));
 });
 
 gulp.task('build', ['html', 'scripts', 'images', 'fonts', 'extras', 'minifyJS'], () => {
