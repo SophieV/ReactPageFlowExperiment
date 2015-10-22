@@ -274,9 +274,9 @@ gulp.task('wiredep', () => {
     .pipe(gulp.dest(path.SRC));
 });
 
-gulp.task('deploy', () => {
+gulp.task('deploy', ['build'], () => {
   return gulp.src(`${path.DEST}/**/*`)
-    // .pipe($.ghPages('git@github.com:josephdburdick/adoptive-2015'));
+    .pipe($.ghPages());
 });
 
 gulp.task('build', ['html', 'scripts', 'images', 'fonts', 'extras', 'minifyJS'], () => {
