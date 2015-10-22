@@ -7,56 +7,84 @@ let React = require('react'),
     eventsConstants = require('./eventsConstants');
 
 let _store = {
+  defaultContentToReturn: [
+    {index: "/home", data: "This is home. Here is an overview of everything."}, 
+    {index: "/work", data: "This is work. We can do this, and that. And this, and that."}, 
+    {index: 0, data: "Generic Content. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum."}],
   contentToTileMapping: [],
+  contentFromIndex: [],
   maxTileIndex: -1,
   minTileIndex: 0,
   defaultContentIndex: 0
 };
 
 let addTileDown = function(contentIndex) {
-    let associatedContentIndex;
-    _store.maxTileIndex++;
+  let associatedContentIndex;
+  _store.maxTileIndex++;
 
-    if (contentIndex == null){
-      let contentIndexNotRenderedYet = false;
+  if (contentIndex == null){
+    let contentIndexNotRenderedYet = false;
 
-      while(!contentIndexNotRenderedYet) {
-        _store.defaultContentIndex++;
-        if (_.findWhere(_store.contentToTileMapping, {contentIndex: _store.defaultContentIndex}) == null) {
-          contentIndexNotRenderedYet = true;
-        }
+    while(!contentIndexNotRenderedYet) {
+      _store.defaultContentIndex++;
+      if (_.findWhere(_store.contentToTileMapping, {contentIndex: _store.defaultContentIndex}) == null) {
+        contentIndexNotRenderedYet = true;
       }
-
-      associatedContentIndex = _store.defaultContentIndex;   
-    } else {
-      associatedContentIndex = contentIndex;
     }
 
-    console.log('retrieving data for #C' + associatedContentIndex);
-    _store.contentToTileMapping.push({tileIndex: _store.maxTileIndex, contentIndex: associatedContentIndex});
+    associatedContentIndex = _store.defaultContentIndex;   
+  } else {
+    associatedContentIndex = contentIndex;
+  }
+
+  console.log('retrieving data for #C' + associatedContentIndex);
+  _store.contentToTileMapping.push({tileIndex: _store.maxTileIndex, contentIndex: associatedContentIndex});
+
+  retrieveFakeContent(associatedContentIndex);
 };
 
+let retrieveFakeContent = function(contentIndex) {
+  let fakeData;
+  switch (contentIndex) {
+    case "/home":
+      fakeData = _.findWhere(_store.defaultContentToReturn, {index: "/home"}).data;
+    break;
+    case "/work":
+      fakeData = _.findWhere(_store.defaultContentToReturn, {index: "/work"}).data;
+    break;
+    default:
+      fakeData = _.findWhere(_store.defaultContentToReturn, {index: 0}).data;
+    break;
+  }
+
+  if (fakeData != null) {
+    _store.contentFromIndex.push({index: contentIndex, data: fakeData});
+  }
+}
+
 let addTileUp = function(contentIndex) {
-    let associatedContentIndex;
-    _store.minTileIndex--;
+  let associatedContentIndex;
+  _store.minTileIndex--;
 
-    if (contentIndex == null){
-      let contentIndexNotRenderedYet = false;
+  if (contentIndex == null){
+    let contentIndexNotRenderedYet = false;
 
-      while(!contentIndexNotRenderedYet) {
-        _store.defaultContentIndex--;
-        if (_.findWhere(_store.contentToTileMapping, {contentIndex: _store.defaultContentIndex}) == null) {
-          contentIndexNotRenderedYet = true;
-        }
+    while(!contentIndexNotRenderedYet) {
+      _store.defaultContentIndex--;
+      if (_.findWhere(_store.contentToTileMapping, {contentIndex: _store.defaultContentIndex}) == null) {
+        contentIndexNotRenderedYet = true;
       }
-
-      associatedContentIndex = _store.defaultContentIndex;   
-    } else {
-      associatedContentIndex = contentIndex;
     }
 
-    console.log('retrieving data for #C' + associatedContentIndex);
-    _store.contentToTileMapping.push({tileIndex: _store.minTileIndex, contentIndex: associatedContentIndex});
+    associatedContentIndex = _store.defaultContentIndex;   
+  } else {
+    associatedContentIndex = contentIndex;
+  }
+
+  console.log('retrieving data for #C' + associatedContentIndex);
+  _store.contentToTileMapping.push({tileIndex: _store.minTileIndex, contentIndex: associatedContentIndex});
+
+  retrieveFakeContent(associatedContentIndex);
 };
 
 let addFirstTileDown = function(contentIndex) {
@@ -66,27 +94,7 @@ let addFirstTileDown = function(contentIndex) {
     _store.minTileIndex = 0;
     _store.defaultContentIndex = 0;
 
-    // addTileDown(contentIndex);
-    let associatedContentIndex;
-    _store.maxTileIndex++;
-
-    if (contentIndex == null){
-      let contentIndexNotRenderedYet = false;
-
-      while(!contentIndexNotRenderedYet) {
-        _store.defaultContentIndex++;
-        if (_.findWhere(_store.contentToTileMapping, {contentIndex: _store.defaultContentIndex}) == null) {
-          contentIndexNotRenderedYet = true;
-        }
-      }
-
-      associatedContentIndex = _store.defaultContentIndex;   
-    } else {
-      associatedContentIndex = contentIndex;
-    }
-
-    console.log('retrieving data for #C' + associatedContentIndex);
-    _store.contentToTileMapping.push({tileIndex: _store.maxTileIndex, contentIndex: associatedContentIndex});
+    addTileDown(contentIndex);
 };
 
 let tilesStore = objectAssign({}, EventEmitter.prototype, {
@@ -104,6 +112,15 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
   },
   getContentToTilesMapping: function(){
     return _store.contentToTileMapping;
+  },
+  getContentFromIndex: function(contentIndex){
+    let contentOfEntry;
+    let entry = _.findWhere(_store.contentFromIndex, {index: contentIndex});
+
+    if (entry != null) {
+      contentOfEntry = entry.data;
+    }
+    return contentOfEntry;
   }
 });
 

@@ -56,7 +56,7 @@ let Tile = React.createClass({
 
 		return (
 			<div className={classNames}>
-				<p>#T{this.props.index} : #C{this.props.contentIndex} Lorem Ipsum.</p>
+				<p>#T{this.props.index} : #C{this.props.contentIndex} {this.props.dataToDisplay}</p>
 				<JumpButton rangeContentMin={this.props.minIndex - 100} rangeContentMax={this.props.maxIndex + 100} jumpToContentCTARef={this.props.jumpToContentCTARef}/>
 			</div>
 		);

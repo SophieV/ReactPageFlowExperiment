@@ -33,7 +33,7 @@ body {
 .content-tile {
   border: 5px dashed pink;
   background-color: lightyellow;
-  height: 120vh; //no scrolling if less than viewport
+  min-height: 120vh; //no scrolling if less than viewport
 }
 
 .content-tile.jumped {

@@ -105,6 +105,7 @@ let Tiles = React.createClass({
 				  minIndex={this.state.countBefore} 
 				  maxIndex={this.state.countAfter} 
 				  currentRoute={this.props.location.pathname} 
+				  dataToDisplay={tilesStore.getContentFromIndex(_.findWhere(tilesList.state.mappingContentToTile, {tileIndex: currentTileIndex}).contentIndex)} 
 				  jumpToContentIndex={this.state.jumpToContentIndex} 
 				  jumpToContentCTARef={this._jumpToContentCTA}
 				  reEnableScrollingDetectionRef={this._reEnableScrollingDetection}/>));
