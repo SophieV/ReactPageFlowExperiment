@@ -2,6 +2,8 @@ let
   React = require('react'),
   _ = require('underscore');
 
+import { Router, Route, Link } from 'react-router'
+
 var JumpButton = React.createClass({
   getInitialState: function(){
     return {
@@ -14,7 +16,7 @@ var JumpButton = React.createClass({
   render: function() {
     return (
       <p className="jump-to-btn" onClick={this.handleClick}>
-        Jump to tile #C{this.state.jumpToContentIndex}
+        <Link to={"/" + this.state.jumpToContentIndex}>Jump to tile #C{this.state.jumpToContentIndex}</Link>
       </p>
     );
   }

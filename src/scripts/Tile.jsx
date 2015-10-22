@@ -23,7 +23,7 @@ let Tile = React.createClass({
 		}
 	},
 	componentDidUpdate: function() {
-		if (this.shouldScroll && this.minIndexWas !== this.props.minIndex && this.routeSingleScrollUpDone === this.props.currentRoute) {
+		if (this.shouldScroll && this.minIndexWas !== this.props.minIndex && (this.routeSingleScrollUpDone === this.props.currentRoute || this.props.ignoreThisRouteChange === this.props.currentRoute)) {
 			// only within the same route
 			console.log('a new tile has been added above me. scroll back to me.');
 			let node = this.getDOMNode();

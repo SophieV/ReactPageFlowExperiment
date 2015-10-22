@@ -10,7 +10,7 @@ let MainContainer = React.createClass({
 			<div className="main-container">
 				<div className="navigation-bar">
 					<p>
-			          <span className={homeClassNames}><Link to="/home">Home</Link></span> 
+			          <span className={homeClassNames}><Link to="/home">Home</Link></span>&nbsp;&nbsp;
 			          <span className={workClassNames}><Link to="/work">Work</Link></span>
 			        </p>
 				</div>

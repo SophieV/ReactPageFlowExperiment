@@ -47,16 +47,20 @@ let Tiles = React.createClass({
 	},
 	_onRouteChanged: function(firstCall){
 		let tilesList = this;
-		console.log('route has changed. display the one tile content.');
-		tilesList.currentRoute = tilesList.props.location.pathname;
-		console.log('current route is ' + tilesList.currentRoute);
+		if (tilesList.ignoreThisRouteChange !== tilesList.props.location.pathname) {
+			console.log('route has changed. display the one tile content.');
+			tilesList.currentRoute = tilesList.props.location.pathname;
+			console.log('current route is ' + tilesList.currentRoute);
 
-		if (!firstCall) {
-			tilesList.scrollDetectionEnabled = false;
-			console.log('disabling scroll detection.');
+			if (!firstCall) {
+				tilesList.scrollDetectionEnabled = false;
+				console.log('disabling scroll detection.');
+			}
+			
+			tilesActions.addFirstTile(tilesList.props.location.pathname);
+		} else {
+			console.log('route change does not reset anything.');
 		}
-		
-		tilesActions.addFirstTile(tilesList.props.location.pathname);
 	},
 	_onTilesDataChanged: function(){
 		let tilesList = this;
@@ -73,7 +77,8 @@ let Tiles = React.createClass({
 	},
 	_jumpToContentCTA: function(requestedContentIndex){
 		let tilesList = this;
-		console.log('Let\'s jump to #C' + requestedContentIndex);
+		tilesList.ignoreThisRouteChange = "/" + requestedContentIndex;
+		console.log('Let\'s jump to #C' + requestedContentIndex + 'and ignore upcoming route change.');
 
 		let contentAlreadyDisplayed = _.findWhere(tilesList.state.mappingContentToTile, {contentIndex: requestedContentIndex});
 
@@ -115,6 +120,7 @@ let Tiles = React.createClass({
 				  minIndex={this.state.countBefore} 
 				  maxIndex={this.state.countAfter} 
 				  currentRoute={this.props.location.pathname} 
+				  ignoreThisRouteChange={this.ignoreThisRouteChange} 
 				  dataToDisplay={tilesStore.getContentFromIndex(_.findWhere(tilesList.state.mappingContentToTile, {tileIndex: currentTileIndex}).contentIndex)} 
 				  jumpToContentIndex={this.state.jumpToContentIndex} 
 				  jumpToContentCTARef={this._jumpToContentCTA}

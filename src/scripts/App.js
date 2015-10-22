@@ -14,6 +14,7 @@ let routes = (
     <Route path="/" component={App.views.MainContainer}>
       <Route path="home" component={App.views.Tiles}/>
       <Route path="work" component={App.views.Tiles}/>
+      <Route path="*" component={App.views.Tiles}/>
     </Route>
   </Router>
 );
