@@ -6,6 +6,8 @@ let
   tilesActions = require('./tilesActions'),
   Tile = require('./Tile.jsx');
 
+  import history from './history'
+
 let Tiles = React.createClass({
 	getInitialState: function(){
 		return {
@@ -59,14 +61,32 @@ let Tiles = React.createClass({
 			
 			tilesActions.addFirstTile(tilesList.props.location.pathname);
 		} else {
-			console.log('route change does not reset anything.');
+				tilesList.currentRoute = tilesList.props.location.pathname;
+				console.log('route change does not reset anything.');
 		}
 	},
 	_onTilesDataChanged: function(){
 		let tilesList = this;
+
+		let lastContentRetrieved = tilesStore.getLastContentIndexGenerated();
+		if (_.indexOf(lastContentRetrieved, '/') < 0) {
+			lastContentRetrieved = '/' + lastContentRetrieved;
+		}
+
+		if (this.props.location.pathname !== lastContentRetrieved) {
+			// we want to overwrite behavior if we set the route ourselves, not if it was set by a click
+			// unless it's already been assigned from the jump to link click
+			this.ignoreThisRouteChange =  lastContentRetrieved;
+		}
+
+		if (this.ignoreThisRouteChange === lastContentRetrieved) {
+			history.replaceState(null, this.ignoreThisRouteChange);
+		}
+
 		if (tilesList.state.jumpToContentIndex !== null) {
 			console.log('will now jump to #T'+ tilesStore.getTilesDownCount() + ' hosting #C' + tilesList.state.jumpToContentIndex);
 		}
+
 		console.log('tiles data change. update counts after/before to respectively ' + tilesStore.getTilesDownCount() + ', ' + tilesStore.getTilesUpCount());
 		tilesList.setState({
 		  countAfter: tilesStore.getTilesDownCount(),
@@ -126,7 +146,7 @@ let Tiles = React.createClass({
 				  jumpToContentCTARef={this._jumpToContentCTA}
 				  reEnableScrollingDetectionRef={this._reEnableScrollingDetection}/>));
 
-		history.pushState(null, null, [window.location.origin, window.location.pathname, ['?from=', tileIndexes[0], '&to=', tileIndexes[tileIndexes.length -1]].join(''), window.location.hash].join(''));
+		// history.pushState(null, null, [window.location.origin, window.location.pathname, ['?from=', tileIndexes[0], '&to=', tileIndexes[tileIndexes.length -1]].join(''), window.location.hash].join(''));
 
 		$(function($) {
 	      let $appContainer = $('#app');
@@ -164,9 +184,11 @@ let Tiles = React.createClass({
 		        }
 		        else
 		        {
-		        	console.log('on neutral grounds.');
-		        	tilesList.setState({'isInSensitiveZone_up': false, 
+		        	if (tilesList.state.isInSensitiveZone_up || tilesList.state.isInSensitiveZone_down) {
+		        		console.log('back neutral grounds.');
+		        		tilesList.setState({'isInSensitiveZone_up': false, 
 		        						'isInSensitiveZone_down': false});
+		        	}
 		        }
 	      	} else {
 	      		console.log('a tile is being accessed.');

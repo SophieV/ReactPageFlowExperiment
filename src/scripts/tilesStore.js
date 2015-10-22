@@ -15,7 +15,9 @@ let _store = {
   contentFromIndex: [],
   maxTileIndex: -1,
   minTileIndex: 0,
-  defaultContentIndex: 0
+  defaultContentIndex: 0,
+  latestTileIndexGenerated: 0,
+  latestContentIndexGenerated: 0
 };
 
 let addTileDown = function(contentIndex) {
@@ -39,6 +41,8 @@ let addTileDown = function(contentIndex) {
 
   console.log('retrieving data for #C' + associatedContentIndex);
   _store.contentToTileMapping.push({tileIndex: _store.maxTileIndex, contentIndex: associatedContentIndex});
+  _store.latestTileIndexGenerated = _store.maxTileIndex;
+  _store.latestContentIndexGenerated = associatedContentIndex;
 
   retrieveFakeContent(associatedContentIndex);
 };
@@ -83,6 +87,8 @@ let addTileUp = function(contentIndex) {
 
   console.log('retrieving data for #C' + associatedContentIndex);
   _store.contentToTileMapping.push({tileIndex: _store.minTileIndex, contentIndex: associatedContentIndex});
+  _store.latestTileIndexGenerated = _store.minTileIndex;
+  _store.latestContentIndexGenerated = associatedContentIndex;
 
   retrieveFakeContent(associatedContentIndex);
 };
@@ -121,6 +127,12 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
       contentOfEntry = entry.data;
     }
     return contentOfEntry;
+  },
+  getLastTileIndexGenerated: function() {
+    return _store.latestTileIndexGenerated;
+  },
+  getLastContentIndexGenerated: function() {
+    return _store.latestContentIndexGenerated;
   }
 });
 

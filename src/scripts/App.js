@@ -5,12 +5,13 @@ let
 
 import React from 'react'
 import { Router, Route, Link } from 'react-router'
+import history from './history'
 
 App.views.MainContainer = require('./MainContainer.jsx');
 App.views.Tiles = require('./Tiles.jsx');
 
 let routes = (
-  <Router>
+  <Router history={history}>
     <Route path="/" component={App.views.MainContainer}>
       <Route path="home" component={App.views.Tiles}/>
       <Route path="work" component={App.views.Tiles}/>
