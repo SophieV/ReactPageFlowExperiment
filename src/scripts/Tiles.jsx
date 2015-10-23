@@ -11,6 +11,7 @@ let
 let Tiles = React.createClass({
 	getInitialState: function(){
 		return {
+		  // layout: JSON.parse($('.config-data').text()).layout,
 		  countAfter: tilesStore.getTilesDownCount(),
 		  countBefore: tilesStore.getTilesUpCount(),
 		  //we're starting at the top of the page
@@ -30,6 +31,8 @@ let Tiles = React.createClass({
 		this.scrollDetectionEnabled = true;
 		console.log('enabling scroll detection.');
 		this._onRouteChanged(true);
+		console.log('new page. reset has reach neutral grounds.');
+		this.hasReachedNeutralGroundsOnce = false;
 	},
 	componentWillUnmount: function(){
 		tilesStore.removeChangeListener(this._onTilesDataChanged);
@@ -41,28 +44,35 @@ let Tiles = React.createClass({
 			} else if (this.state.isInSensitiveZone_down) {
 				tilesActions.addTileDown(this.state.jumpToContentIndex);
 			}
-		}
-
-		if (this.props.location.pathname !== this.currentRoute) {
+		} else {
+			// regardless of whether same route name
 			this._onRouteChanged(false);
 		}
 	},
 	_onRouteChanged: function(firstCall){
 		let tilesList = this;
-		if (tilesList.ignoreThisRouteChange !== tilesList.props.location.pathname) {
-			console.log('route has changed. display the one tile content.');
-			tilesList.currentRoute = tilesList.props.location.pathname;
-			console.log('current route is ' + tilesList.currentRoute);
 
-			if (!firstCall) {
-				tilesList.scrollDetectionEnabled = false;
-				console.log('disabling scroll detection.');
-			}
-			
-			tilesActions.addFirstTile(tilesList.props.location.pathname);
-		} else {
+		if (firstCall || tilesList.props.location.pathname !== tilesList.currentRoute) {
+			if (tilesList.ignoreThisRouteChange !== tilesList.props.location.pathname) {
+				console.log('route has changed. display the one tile content.');
 				tilesList.currentRoute = tilesList.props.location.pathname;
-				console.log('route change does not reset anything.');
+				console.log('current route is ' + tilesList.currentRoute);
+
+				console.log('new page. reset has reach neutral grounds.');
+				tilesList.hasReachedNeutralGroundsOnce = false;
+
+				if (!firstCall) {
+					tilesList.scrollDetectionEnabled = false;
+					console.log('disabling scroll detection.');
+				}
+				
+				tilesActions.addFirstTile(tilesList.props.location.pathname);
+			} else {
+					tilesList.currentRoute = tilesList.props.location.pathname;
+					console.log('route change does not reset anything.');
+			}
+		} else {
+			console.log('route change does not reset anything.');
 		}
 	},
 	_onTilesDataChanged: function(){
@@ -146,8 +156,6 @@ let Tiles = React.createClass({
 				  jumpToContentCTARef={this._jumpToContentCTA}
 				  reEnableScrollingDetectionRef={this._reEnableScrollingDetection}/>));
 
-		// history.pushState(null, null, [window.location.origin, window.location.pathname, ['?from=', tileIndexes[0], '&to=', tileIndexes[tileIndexes.length -1]].join(''), window.location.hash].join(''));
-
 		$(function($) {
 	      let $appContainer = $('#app');
 
@@ -173,7 +181,7 @@ let Tiles = React.createClass({
 		        } 
 		        else if(thisScrollTop < UPPER_THRESHOLD)
 		        {
-		        	if (!tilesList.state.isInSensitiveZone_up)
+		        	if (tilesList.hasReachedNeutralGroundsOnce && !tilesList.state.isInSensitiveZone_up)
 		        	{
 		        		console.log("reaching beginning of page.");
 		        		tilesList.setState({'isInSensitiveZone_up': true,
@@ -185,6 +193,16 @@ let Tiles = React.createClass({
 		        else
 		        {
 		        	if (tilesList.state.isInSensitiveZone_up || tilesList.state.isInSensitiveZone_down) {
+		        		if (!tilesList.hasReachedNeutralGroundsOnce) {
+		        			window.setTimeout(
+						      () => { 
+						      	console.log('initial reach of neutral grounds.');
+		        				tilesList.hasReachedNeutralGroundsOnce = true;
+						      },
+						      500
+						    );
+		        		}
+
 		        		console.log('back neutral grounds.');
 		        		tilesList.setState({'isInSensitiveZone_up': false, 
 		        						'isInSensitiveZone_down': false});

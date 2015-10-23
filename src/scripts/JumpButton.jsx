@@ -10,12 +10,12 @@ var JumpButton = React.createClass({
       jumpToContentIndex: _.random(this.props.rangeContentMin, this.props.rangeContentMax)
     }
   },
-  handleClick: function(event) {
+  _handleClick: function(event) {
     this.props.jumpToContentCTARef(this.state.jumpToContentIndex);
   },
   render: function() {
     return (
-      <p className="jump-to-btn" onClick={this.handleClick}>
+      <p className="jump-to-btn" onClick={this._handleClick}>
         <Link to={"/" + this.state.jumpToContentIndex}>Jump to tile #C{this.state.jumpToContentIndex}</Link>
       </p>
     );

@@ -1,17 +1,23 @@
 import React from 'react'
 import { Router, Route, Link } from 'react-router'
 
-let MainContainer = React.createClass({
-	render: function() {
-		let homeClassNames = (this.props.location.pathname === '/home'?'active-route':'');
-		let workClassNames = (this.props.location.pathname === '/work'?'active-route':'');
+let NavigationItem = require('./NavigationItem.jsx')
 
+let MainContainer = React.createClass({
+	// _renderChildren: function () {
+	//     return React.Children.map(this.props.children, function (child) {
+	//         return React.addons.cloneWithProps(child, {
+	//           jumpBackToContent: this._redirectJumpToContentCTA
+	//         })
+	//     }.bind(this))
+	//   },//{this._renderChildren()}
+	render: function() {
 		return (
 			<div className="main-container">
 				<div className="navigation-bar">
 					<p>
-			          <span className={homeClassNames}><Link to="/home">Home</Link></span>&nbsp;&nbsp;
-			          <span className={workClassNames}><Link to="/work">Work</Link></span>
+					  <NavigationItem currentRoute={this.props.location.pathname} routeValue="/home" routeLabel="Home"/>&nbsp;&nbsp;
+			          <NavigationItem currentRoute={this.props.location.pathname} routeValue="/work" routeLabel="Work"/>
 			        </p>
 				</div>
 				<div className="data-content">
