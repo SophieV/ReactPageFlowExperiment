@@ -4,32 +4,35 @@ let
 
 let Tile = React.createClass({
 	componentWillUpdate: function() {
-		if (this.props.jumpToContentIndex == null && this.props.index === this.props.minIndex) {
+		if (this.props.jumpToRouteValue == null && this.props.tileIndex === this.props.minTileIndex) {
 	  		this.shouldScroll = true;
-	  		this.minIndexWas = this.props.minIndex;
+	  		this.minTileIndex_previous = this.props.minTileIndex;
 	  		this.positionBackTo = $(window).scrollTop();
-		} else if (this.props.jumpToContentIndex != null) {
-			this.jumpToContentIndexWas = this.props.jumpToContentIndex;
+		} else if (this.props.jumpToRouteValue != null) {
+			this.jumpToRouteValue_previous = this.props.jumpToRouteValue;
 		}
 	}, 
 	componentDidMount: function() {
-		if (this.props.contentIndex === this.props.jumpToContentIndex) {
+		if (this.props.contentRoute === this.props.jumpToRouteValue) {
 			console.log('i am the new tile added at the bottom, containing the jump content. scroll me to the top of the page.');
 			let node = this.getDOMNode();
 			$(window).scrollTop(node.offsetTop);
 			this.shouldScroll = false;
 			this.positionBackTo = null;
-			this.routeSingleScrollUpDone = null;
+			this.scrollUpDoneForRouteValue = null;
+
 			this.props.reEnableScrollingDetectionRef();
 		}
 	},
 	componentDidUpdate: function() {
-		if (this.props.currentRoute !== this.routeSingleScrollUpDone) {
+		if (this.props.currentRoute !== this.scrollUpDoneForRouteValue) {
 			//reset
-			this.routeSingleScrollUpDone = null;
+			this.scrollUpDoneForRouteValue = null;
 		}
-		
-		if (this.shouldScroll && this.minIndexWas !== this.props.minIndex && (this.routeSingleScrollUpDone === this.props.currentRoute || this.props.ignoreThisRouteChange === this.props.currentRoute)) {
+
+		if (this.shouldScroll 
+		 && this.minTileIndex_previous !== this.props.minTileIndex 
+		 && (this.scrollUpDoneForRouteValue === this.props.currentRoute || this.props.ignoreRouteChangedTo === this.props.currentRoute)) {
 			// only within the same route
 			console.log('a new tile has been added above me. scroll back to me.');
 			let node = this.getDOMNode();
@@ -38,24 +41,31 @@ let Tile = React.createClass({
 			$(window).scrollTop(this.positionBackTo + nodeAboveHeight);
 			this.shouldScroll = false;
 			this.positionBackTo = null;
-			this.routeSingleScrollUpDone = null;
+			this.scrollUpDoneForRouteValue = null;
+
 			this.props.reEnableScrollingDetectionRef();
-		} else if (this.jumpToContentIndexWas != this.props.jumpToContentIndex && this.props.contentIndex === this.props.jumpToContentIndex) {
+		} else if (this.jumpToRouteValue_previous != this.props.jumpToRouteValue 
+				&& this.props.contentRoute === this.props.jumpToRouteValue) {
 			console.log('i am an existing tile containing the jump content. scroll me to the top of the page.');
 			let node = this.getDOMNode();
 			$(window).scrollTop(node.offsetTop);
 			this.shouldScroll = false;
 			this.positionBackTo = null;
-			this.routeSingleScrollUpDone = null;
+			this.scrollUpDoneForRouteValue = null;
+
 			this.props.reEnableScrollingDetectionRef();
-		} else if (this.minIndex === this.maxIndex && this.props.minIndex === this.props.index && this.routeSingleScrollUpDone !== this.props.currentRoute && this.props.contentIndex === this.props.currentRoute) {
+		} else if (this.props.minTileIndex === this.props.maxTileIndex 
+				&& this.props.minTileIndex === this.props.tileIndex 
+				&& this.scrollUpDoneForRouteValue !== this.props.currentRoute 
+				&& this.props.contentRoute === this.props.currentRoute) {
 			// we need to check both for a new route AND new content
 			// when the route is changed, all the components update ; the tile gets the new route before the tiles list does - and the tiles list is the one triggering the load of the content for the given route...
 			console.log('i am the only tile for this route change. scroll me to the top of the page.');
 			$(window).scrollTop(0);
-			this.routeSingleScrollUpDone = this.props.currentRoute;
+			this.scrollUpDoneForRouteValue = this.props.currentRoute;
 			this.shouldScroll = false;
 			this.positionBackTo = null;
+
 			this.props.reEnableScrollingDetectionRef();
 		}
 	},
@@ -64,13 +74,13 @@ let Tile = React.createClass({
 		return {__html: tile.props.dataToDisplay}; 
 	},
 	render: function() {
-		let classNames = (this.props.index === this.props.minIndex?"content-tile first":(this.props.jumpToContentIndex === this.props.contentIndex?"content-tile jumped":"content-tile"));
+		let classNames = (this.props.tileIndex === this.props.minTileIndex?"content-tile first":(this.props.jumpToRouteValue === this.props.contentRoute?"content-tile jumped":"content-tile"));
 
 		return (
 			<div className={classNames}>
-				<p>#T{this.props.index} : #C{this.props.contentIndex}</p>
+				<p>Tile #{this.props.tileIndex} : content of #{this.props.contentRoute}</p>
 				<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
-				<JumpButton rangeContentMin={this.props.minIndex - 100} rangeContentMax={this.props.maxIndex + 100} jumpToContentCTARef={this.props.jumpToContentCTARef}/>
+				<JumpButton rangeContentRouteMin={-100} rangeContentRouteMax={100} jumpToRouteRef={this.props.jumpToRouteRef}/>
 			</div>
 		);
 	}
