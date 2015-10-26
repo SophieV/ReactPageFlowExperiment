@@ -1,6 +1,7 @@
 let
   React = require('react'),
-  JumpButton = require('./JumpButton.jsx');
+  JumpButton = require('./JumpButton.jsx'),
+  $ = require('jquery');
 
 let Tile = React.createClass({
 	componentWillUpdate: function() {
@@ -74,13 +75,24 @@ let Tile = React.createClass({
 		return {__html: tile.props.dataToDisplay}; 
 	},
 	render: function() {
+		let tile = this;
+		// $(function($) {
+	 //      let $appContainer = $('#app');
+
+	 //     window.onscroll = function() {
+	 //      	console.log('i am at ' + tile.getDOMNode().top);
+	 //      };
+	 //    });
+
 		let classNames = (this.props.tileIndex === this.props.minTileIndex?"content-tile first":(this.props.jumpToRouteValue === this.props.contentRoute?"content-tile jumped":"content-tile"));
 
 		return (
 			<div className={classNames}>
-				<p>Tile #{this.props.tileIndex} : content of #{this.props.contentRoute}</p>
-				<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
-				<JumpButton rangeContentRouteMin={-100} rangeContentRouteMax={100} jumpToRouteRef={this.props.jumpToRouteRef}/>
+				<div className="page-content">
+					<p>Tile #{this.props.tileIndex} : content of #{this.props.contentRoute}</p>
+					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
+					<JumpButton rangeContentRouteMin={-100} rangeContentRouteMax={100} jumpToRouteRef={this.props.jumpToRouteRef}/>
+				</div>
 			</div>
 		);
 	}
