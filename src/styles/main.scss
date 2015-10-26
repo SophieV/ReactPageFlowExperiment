@@ -7,10 +7,19 @@ body {
   border: 1px solid black;
   padding: 10px;
   width: 40px;
+  background-color: lightgreen;
 }
 
 .active-route {
   background: lightblue;
+}
+
+.page-content {
+  width: 80vw;
+  border: 1px black solid;
+  background-color: white;
+  margin: 10px 10vw;
+  padding: 0 5px;
 }
 
 .main-container {

@@ -14,10 +14,11 @@ let Tile = React.createClass({
 		}
 	}, 
 	componentDidMount: function() {
+		const MARGIN_TOP_NAVBAR = 55; //TODO : how to define in vh instead of px ?
 		if (this.props.contentRoute === this.props.jumpToRouteValue) {
 			console.log('i am the new tile added at the bottom, containing the jump content. scroll me to the top of the page.');
 			let node = this.getDOMNode();
-			$(window).scrollTop(node.offsetTop);
+			$(window).scrollTop(node.offsetTop - MARGIN_TOP_NAVBAR);
 			this.shouldScroll = false;
 			this.positionBackTo = null;
 			this.scrollUpDoneForRouteValue = null;
