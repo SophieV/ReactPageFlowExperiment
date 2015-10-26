@@ -2,22 +2,22 @@ let AppDispatcher = require('./AppDispatcher'),
 	actionsConstants = require('./actionsConstants');
 
 var tilesActions = {
-	addTileDown: function(contentIndex){
+	addTileDown: function(route){
     AppDispatcher.handleAction({
       actionType: actionsConstants.ADD_TILE_DOWN,
-      data: contentIndex
+      data: route
     })
   },
-  addTileUp: function(contentIndex){
+  addTileUp: function(route){
     AppDispatcher.handleAction({
       actionType: actionsConstants.ADD_TILE_UP,
-      data: contentIndex
+      data: route
     })
   },
-  addFirstTile: function(contentIndex){
+  addFirstTile: function(route){
     AppDispatcher.handleAction({
       actionType: actionsConstants.ADD_FIRST_TILE,
-      data: contentIndex
+      data: route
     });
   }
 };

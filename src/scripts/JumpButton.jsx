@@ -7,16 +7,16 @@ import { Router, Route, Link } from 'react-router'
 var JumpButton = React.createClass({
   getInitialState: function(){
     return {
-      jumpToContentRoute: _.random(this.props.rangeContentRouteMin, this.props.rangeContentRouteMax)
+      randomValue: _.random(this.props.rangeMin, this.props.rangeMax)
     }
   },
   _handleClick: function(event) {
-    this.props.jumpToRouteRef(this.state.jumpToContentRoute);
+    this.props.onJumpBtnClickRef("/" + this.state.randomValue);
   },
   render: function() {
     return (
       <p className="jump-to-btn" onClick={this._handleClick}>
-        <Link to={"/" + this.state.jumpToContentRoute}>Jump to tile #C{this.state.jumpToContentRoute}</Link>
+        <Link to={"/" + this.state.randomValue}>Jump to tile #C{this.state.randomValue}</Link>
       </p>
     );
   }

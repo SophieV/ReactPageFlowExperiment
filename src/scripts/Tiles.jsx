@@ -11,31 +11,30 @@ let
 let Tiles = React.createClass({
 	getInitialState: function(){
 		return {
-		  maxTileIndex: tilesStore.getTilesDownCount(),
-		  minTileIndex: tilesStore.getTilesUpCount(),
-		  // TODO move to tile
-		  mappingContentToTile: []
+		  maxTileIndex: tilesStore.getMaxTileIndex(),
+		  minTileIndex: tilesStore.getMinTileIndex(),
+		  mappingContentIndexToTileIndex: []
 		}
 	},
 	componentDidMount: function(){
 		tilesStore.addChangeListener(this._onTilesDataChanged);
 
-		this.currentRoute = this.props.location.pathname;
-		console.log('current route is ' + this.currentRoute);
+		this._currentRoute = this.props.location.pathname;
+		console.log('current route is ' + this._currentRoute);
 
-		this.scrollDetectionEnabled = true;
+		this._scrollDetectionEnabled = true;
 		console.log('enabling scroll detection.');
 
 		this._onRouteMayHaveChanged(true);
 
 		console.log('new page. reset has reach neutral grounds.');
-		this.notInScrollingSensitiveZone_once = false;
+		this._scrollDetectionInit = false;
 
 		// starting at the top of the viewport ; do nothing
-		this.isInScrollingSensitiveZone_down = false;
-		this.isInScrollingSensitiveZone_up = true;
-		this.isInScrollingSensitiveZone_actionCompleted = true;
-		this.jumpToRouteValue = null;
+		this._inSensitiveZonePageBottom = false;
+		this._inSensitiveZonePageUp = true;
+		this._inSensitiveZoneLocked = false;
+		this._routeJump = null;
 	},
 	componentWillUnmount: function(){
 		tilesStore.removeChangeListener(this._onTilesDataChanged);
@@ -44,35 +43,35 @@ let Tiles = React.createClass({
 		this._onRouteMayHaveChanged(false);
 	},
 	_onRouteMayHaveChanged: function(init){
-		let tilesList = this;
 		console.log('route may have changed.');
 
-		if (init || tilesList.currentRoute !== tilesList.props.location.pathname || tilesList.redrawNeeded) {
+		if (init
+		 || this._currentRoute !== this.props.location.pathname 
+		 || this._redrawNeeded) {
 
-			if (tilesList.ignoreRouteChangedTo !== tilesList.props.location.pathname) {
+		 	this._currentRoute = this.props.location.pathname;
+		 	console.log('current route is ' + this._currentRoute);
+
+			if (this._ignoreRoute !== this._currentRoute) {
 
 				console.log('route has changed. display the one tile content.');
-				tilesList.currentRoute = tilesList.props.location.pathname;
-				console.log('current route is ' + tilesList.currentRoute);
-
+				
 				console.log('new page. reset has reach neutral grounds.');
-				tilesList.notInScrollingSensitiveZone_once = false;
+				this._scrollDetectionInit = false;
 
 				if (!init) {
-					tilesList.scrollDetectionEnabled = false;
+					this._scrollDetectionEnabled = false;
 					console.log('disabling scroll detection.');
 				}
 				
-				tilesActions.addFirstTile(tilesList.props.location.pathname);
+				tilesActions.addFirstTile(this._currentRoute);
 
 			} else {
-
-					tilesList.currentRoute = tilesList.props.location.pathname;
 					console.log('route change does not reset anything.');
 
-					if (tilesList.scrollingToExistingRoute) {
-						tilesList.scrollingToExistingRoute = false;
-						tilesList._reEnableScrollingDetection();
+					if (this._scrollingLocked) {
+						this._scrollingLocked = false;
+						this._enableScrollingDetection();
 					}
 			}
 		} else {
@@ -80,8 +79,7 @@ let Tiles = React.createClass({
 		}
 	},
 	_onTilesDataChanged: function(){
-		let tilesList = this;
-
+		// TODO remove
 		let lastRouteLoaded = tilesStore.getLastContentIndexGenerated();
 		if (_.indexOf(lastRouteLoaded, '/') < 0) {
 			lastRouteLoaded = '/' + lastRouteLoaded;
@@ -90,112 +88,109 @@ let Tiles = React.createClass({
 		if (this.props.location.pathname !== lastRouteLoaded) {
 			// we want to overwrite behavior if we set the route ourselves, not if it was set by a click
 			// unless it's already been assigned from the jump to link click
-			this.ignoreRouteChangedTo =  lastRouteLoaded;
+			this._ignoreRoute =  lastRouteLoaded;
 		}
 
-		if (this.ignoreRouteChangedTo === lastRouteLoaded) {
-			this._updateRouteDisplayedToUser(this.ignoreRouteChangedTo);
+		if (this._ignoreRoute === lastRouteLoaded) {
+			this._refreshUrlRoute(this._ignoreRoute);
 		}
 
-		if (tilesList.jumpToRouteValue != null) {
-			console.log('will now jump to tile #'+ tilesStore.getTilesDownCount() + ' hosting content #' + tilesList.jumpToRouteValue);
+		if (this._routeJump != null) {
+			console.log('will now jump to tile #'+ tilesStore.getMaxTileIndex() + ' hosting content #' + this._routeJump);
 		}
 
-		console.log('tiles data change. update tiles range to  [' + tilesStore.getTilesDownCount() + ', ' + tilesStore.getTilesUpCount() + ']');
-		tilesList.isInScrollingSensitiveZone_actionCompleted = true;
+		console.log('tiles data change. update tiles range [' + tilesStore.getMinTileIndex() + ', ' + tilesStore.getMaxTileIndex() + ']');
+		this._inSensitiveZoneLocked = false;
 
-		tilesList.setState({
-		  maxTileIndex: tilesStore.getTilesDownCount(),
-		  minTileIndex: tilesStore.getTilesUpCount(),
-		  mappingContentToTile: tilesStore.getContentToTilesMapping()
+		this.setState({
+		  maxTileIndex: tilesStore.getMaxTileIndex(),
+		  minTileIndex: tilesStore.getMinTileIndex(),
+		  mappingContentIndexToTileIndex: tilesStore.getContentToTilesMapping()
 		});
 	},
-	_updateRouteDisplayedToUser: function(routeValue){
-		history.replaceState(null, routeValue);
+	_refreshUrlRoute: function(route){
+		history.replaceState(null, route);
 	},
-	_showPageBeingScrolledBackTo: function(routeValue){
-		console.log('scrolling back to ' + routeValue);
-		this.ignoreRouteChangedTo = routeValue;
-		this.scrollingToExistingRoute = true;
+	_refreshRouteState: function(route){
+		console.log('scrolling back to ' + route);
+		this._ignoreRoute = route;
+		this._scrollingLocked = true;
 
-		this.scrollDetectionEnabled = false;
+		this._scrollDetectionEnabled = false;
 		console.log('disabling scroll detection.');
 
-		this._updateRouteDisplayedToUser(routeValue);
+		this._refreshUrlRoute(route);
 	},
-	_jumpToRoute: function(requestedRoute){
-		let tilesList = this;
-		tilesList.ignoreRouteChangedTo = "/" + requestedRoute;
-		console.log('Let\'s jump to content #' + requestedRoute + 'and ignore upcoming route change.');
+	_jumpToRoute: function(route){
+		this._ignoreRoute = "/" + route;
+		console.log('Let\'s jump to content #' + route + ' and ignore upcoming route change.');
 
-		let routeAlreadyLoaded = _.findWhere(tilesList.state.mappingContentToTile, {contentIndex: requestedRoute});
+		let routeAlreadyLoaded = _.findWhere(this.state.mappingContentIndexToTileIndex, {contentIndex: route});
 
 		if (routeAlreadyLoaded != null) {
 			console.log('existing content found. scrolling to host tile #' + routeAlreadyLoaded.tileIndex);
 			// TODO we need to trigger a state refresh so that the tile can act upon itself.
-			tilesList.scrollDetectionEnabled = false;
-			tilesList.jumpToRouteValue = requestedRoute;
-			tilesList.setState({redrawNeeded: true});
+			this._scrollDetectionEnabled = false;
+			this._routeJump = route;
+			this.setState({'redrawNeeded': true});
 		} else {
 			console.log('content not found. adding a tile to host it.');
-			tilesList.scrollDetectionEnabled = false;
-			tilesList.isInScrollingSensitiveZone_down = true;
-			tilesList.isInScrollingSensitiveZone_up = false;
-			tilesList.isInScrollingSensitiveZone_actionCompleted = false; 
-			tilesList.jumpToRouteValue = requestedRoute;
-			tilesList._addTiles();
+			this._scrollDetectionEnabled = false;
+			this._inSensitiveZonePageBottom = true;
+			this._inSensitiveZonePageUp = false;
+			this._inSensitiveZoneLocked = true; 
+			this._routeJump = route;
+			this._addTiles();
 		}
 	},
-	_reEnableScrollingDetection : function() {
+	_enableScrollingDetection : function() {
 		let tilesList = this;
 		// delaying the effect, so that any undergoing scrolling can finish before
 		// otherwise will add a new page because scrolling up enters the upper threshold
 		window.setTimeout(
 	      () => { 
-	      	tilesList.scrollDetectionEnabled = true;
+	      	tilesList._scrollDetectionEnabled = true;
 			console.log('enabling scroll detection.'); 
 	      },
 	      500
 	    );
 	},
 	_addTiles: function(){
-		let tilesList = this;
-		if (!tilesList.isInScrollingSensitiveZone_actionCompleted) {
+		if (this._inSensitiveZoneLocked) {
 
-			if (tilesList.isInScrollingSensitiveZone_up) {
+			if (this._inSensitiveZonePageUp) {
 
 				tilesActions.addTileUp();
 
-			} else if (tilesList.isInScrollingSensitiveZone_down) {
+			} else if (this._inSensitiveZonePageBottom) {
 
-				tilesActions.addTileDown(tilesList.jumpToRouteValue);
+				tilesActions.addTileDown(this._routeJump);
 			}
 		}
 	},
 	render: function() {
-		let tilesList = this;
 		const UPPER_THRESHOLD = 50;
 
 		let tileIndexes = _.range(this.state.minTileIndex, this.state.maxTileIndex + 1);
 
 		let tileComponents = _.map(tileIndexes, currentTileIndex => (
 			<Tile tileIndex={currentTileIndex} 
-				  contentRoute={_.findWhere(tilesList.state.mappingContentToTile, {tileIndex: currentTileIndex}).contentIndex} 
+				  route={_.findWhere(this.state.mappingContentIndexToTileIndex, {tileIndex: currentTileIndex}).route} 
 				  minTileIndex={this.state.minTileIndex} 
 				  maxTileIndex={this.state.maxTileIndex} 
-				  currentRoute={this.props.location.pathname} 
-				  ignoreRouteChangedTo={this.ignoreRouteChangedTo} 
-				  jumpToRouteValue={this.jumpToRouteValue} 
+				  currentRoute={this._currentRoute} 
+				  ignoreRoute={this._ignoreRoute} 
+				  routeJump={this._routeJump} 
 				  jumpToRouteRef={this._jumpToRoute} 
-				  showPageBeingScrolledBackToRef={this._showPageBeingScrolledBackTo}
-				  reEnableScrollingDetectionRef={this._reEnableScrollingDetection} 
-				dataToDisplay={tilesStore.getContentFromIndex(_.findWhere(tilesList.state.mappingContentToTile, {tileIndex: currentTileIndex}).contentIndex)} />));
+				  refreshRouteStateRef={this._refreshRouteState}
+				  enableScrollingDetectionRef={this._enableScrollingDetection} />));
 
+		let tilesList = this;
 		$(function($) {
 	      let $appContainer = $('#app');
 
 	      window.onscroll = function() {
-	      	if (tilesList.scrollDetectionEnabled) {
+	      	if (tilesList._scrollDetectionEnabled) {
 		      	let thisScrollTop = Math.round($(this).scrollTop()),
 		            thisInnerHeight = Math.round($(this).innerHeight()),
 		            containeR = window,
@@ -205,44 +200,44 @@ let Tiles = React.createClass({
 		        let lower_threshold = thisScrollTop + thisInnerHeight + 1;
 		        if(lower_threshold >= $appContainer.outerHeight())
 		        {
-		        	if (!tilesList.isInScrollingSensitiveZone_down)
+		        	if (!tilesList._inSensitiveZonePageBottom)
 		        	{
 		        		console.log("reaching end of page.");
-		        		tilesList.isInScrollingSensitiveZone_down = true;
-		        		tilesList.isInScrollingSensitiveZone_up = false; 
-		        		tilesList.isInScrollingSensitiveZone_actionCompleted = false;
-		        		tilesList.jumpToRouteValue = null;
+		        		tilesList._inSensitiveZonePageBottom = true;
+		        		tilesList._inSensitiveZonePageUp = false; 
+		        		tilesList._inSensitiveZoneLocked = true;
+		        		tilesList._routeJump = null;
 		        		tilesList._addTiles();
 		        	}
 		        } 
 		        else if(thisScrollTop < UPPER_THRESHOLD)
 		        {
-		        	if (tilesList.notInScrollingSensitiveZone_once && !tilesList.isInScrollingSensitiveZone_up)
+		        	if (tilesList._scrollDetectionInit && !tilesList._inSensitiveZonePageUp)
 		        	{
 		        		console.log("reaching beginning of page.");
-		        		tilesList.isInScrollingSensitiveZone_up = true;
-		        		tilesList.isInScrollingSensitiveZone_down = false;
-		        		tilesList.isInScrollingSensitiveZone_actionCompleted = false;
-		        		tilesList.jumpToRouteValue = null;
+		        		tilesList._inSensitiveZonePageUp = true;
+		        		tilesList._inSensitiveZonePageBottom = false;
+		        		tilesList._inSensitiveZoneLocked = true;
+		        		tilesList._routeJump = null;
 		        		tilesList._addTiles();
 		        	}
 		        }
 		        else
 		        {
-		        	if (tilesList.isInScrollingSensitiveZone_up || tilesList.isInScrollingSensitiveZone_down) {
-		        		if (!tilesList.notInScrollingSensitiveZone_once) {
+		        	if (tilesList._inSensitiveZonePageUp || tilesList._inSensitiveZonePageBottom) {
+		        		if (!tilesList._scrollDetectionInit) {
 		        			window.setTimeout(
 						      () => { 
 						      	console.log('initial reach of neutral zone.');
-		        				tilesList.notInScrollingSensitiveZone_once = true;
+		        				tilesList._scrollDetectionInit = true;
 						      },
 						      500
 						    );
 		        		}
 
 		        		console.log('back to neutral zone.');
-		        		tilesList.isInScrollingSensitiveZone_up = false;
-		        		tilesList.isInScrollingSensitiveZone_down = false;
+		        		tilesList._inSensitiveZonePageUp = false;
+		        		tilesList._inSensitiveZonePageBottom = false;
 		        	}
 		        }
 	      	} else {

@@ -7,7 +7,7 @@ body {
 .jump-to-btn {
   border: 1px solid black;
   padding: 10px;
-  width: 40px;
+  width: 100px;
   background-color: lightgreen;
 }
 
@@ -17,7 +17,7 @@ body {
 
 .visibility-sensor-up {
   position: absolute;
-  top: 70vh;
+  top: 30vh;
   min-height: 20px;
   border: 1px solid blue;
   background-color: aliceblue;
@@ -25,7 +25,7 @@ body {
 
 .visibility-sensor-down {
   position: absolute;
-  bottom: 70vh;
+  bottom: 30vh;
   min-height: 20px;
   border: 1px solid blue;
   background-color: aliceblue;
@@ -55,10 +55,18 @@ body {
 }
 
 .content-tile {
-  // border: 5px dashed pink;
-  // background-color: lightyellow;
-  min-height: 120vh; //no scrolling if less than viewport
   padding: 6vh 0;
+  // border: 5px dashed pink;
+  background-color: lightyellow;
+}
+
+.content-tile.collapsed {
+  height: 40vh;
+  overflow: hidden;
+}
+
+.content-tile.expanded {
+  min-height: 120vh; //no scrolling if less than viewport
 }
 
 .content-tile.jumped {
