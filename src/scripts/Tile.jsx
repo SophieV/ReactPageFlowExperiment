@@ -98,12 +98,15 @@ let Tile = React.createClass({
 		return (
 			<div className={classNames}>
 				<div className="page-content">
-					<div className="visibility-sensor">Visibility Sensor for #T{this.props.tileIndex}
+					<div className="visibility-sensor-up">Visibility Sensor for #T{this.props.tileIndex} #C{this.props.contentRoute}
 						<VisibilitySensor onChange={this.onVisibilityChange} />
 					</div>
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.contentRoute}</p>
 					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
 					<JumpButton rangeContentRouteMin={-100} rangeContentRouteMax={100} jumpToRouteRef={this.props.jumpToRouteRef}/>
+					<div className="visibility-sensor-down">Visibility Sensor for #T{this.props.tileIndex} #C{this.props.contentRoute}
+						<VisibilitySensor onChange={this.onVisibilityChange} />
+					</div>
 				</div>
 			</div>
 		);

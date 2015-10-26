@@ -15,9 +15,17 @@ body {
   background: lightblue;
 }
 
-.visibility-sensor {
+.visibility-sensor-up {
   position: absolute;
   top: 70vh;
+  min-height: 20px;
+  border: 1px solid blue;
+  background-color: aliceblue;
+}
+
+.visibility-sensor-down {
+  position: absolute;
+  bottom: 70vh;
   min-height: 20px;
   border: 1px solid blue;
   background-color: aliceblue;
@@ -29,7 +37,7 @@ body {
   min-height: 90vh;
   border: 1px lightgrey solid;
   background-color: white;
-  margin: 50px 10vw;
+  margin: 0px 10vw;
   padding: 0 5px;
 }
 
@@ -50,6 +58,7 @@ body {
   // border: 5px dashed pink;
   // background-color: lightyellow;
   min-height: 120vh; //no scrolling if less than viewport
+  padding: 6vh 0;
 }
 
 .content-tile.jumped {
@@ -59,4 +68,8 @@ body {
 .content-tile.first {
   margin-top: 6vh;
   background-color: green;
+}
+
+.content-tile:nth-child(even) {
+  background-color: darkgrey;
 }
