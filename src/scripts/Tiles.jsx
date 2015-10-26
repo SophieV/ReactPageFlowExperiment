@@ -45,8 +45,9 @@ let Tiles = React.createClass({
 	},
 	_onRouteMayHaveChanged: function(init){
 		let tilesList = this;
+		console.log('route may have changed.');
 
-		if (init || tilesList.currentRoute !== tilesList.props.location.pathname) {
+		if (init || tilesList.currentRoute !== tilesList.props.location.pathname || tilesList.redrawNeeded) {
 
 			if (tilesList.ignoreRouteChangedTo !== tilesList.props.location.pathname) {
 
@@ -68,6 +69,11 @@ let Tiles = React.createClass({
 
 					tilesList.currentRoute = tilesList.props.location.pathname;
 					console.log('route change does not reset anything.');
+
+					if (tilesList.scrollingToExistingRoute) {
+						tilesList.scrollingToExistingRoute = false;
+						tilesList._reEnableScrollingDetection();
+					}
 			}
 		} else {
 			console.log('route change does not reset anything.');
@@ -106,6 +112,16 @@ let Tiles = React.createClass({
 	},
 	_updateRouteDisplayedToUser: function(routeValue){
 		history.replaceState(null, routeValue);
+	},
+	_showPageBeingScrolledBackTo: function(routeValue){
+		console.log('scrolling back to ' + routeValue);
+		this.ignoreRouteChangedTo = routeValue;
+		this.scrollingToExistingRoute = true;
+
+		this.scrollDetectionEnabled = false;
+		console.log('disabling scroll detection.');
+
+		this._updateRouteDisplayedToUser(routeValue);
 	},
 	_jumpToRoute: function(requestedRoute){
 		let tilesList = this;
@@ -171,6 +187,7 @@ let Tiles = React.createClass({
 				  ignoreRouteChangedTo={this.ignoreRouteChangedTo} 
 				  jumpToRouteValue={this.jumpToRouteValue} 
 				  jumpToRouteRef={this._jumpToRoute} 
+				  showPageBeingScrolledBackToRef={this._showPageBeingScrolledBackTo}
 				  reEnableScrollingDetectionRef={this._reEnableScrollingDetection} 
 				dataToDisplay={tilesStore.getContentFromIndex(_.findWhere(tilesList.state.mappingContentToTile, {tileIndex: currentTileIndex}).contentIndex)} />));
 

@@ -2,6 +2,7 @@ let
   React = require('react'),
   JumpButton = require('./JumpButton.jsx'),
   $ = require('jquery'),
+  _ = require('underscore'),
   VisibilitySensor = require('react-visibility-sensor');
 
 let Tile = React.createClass({
@@ -28,6 +29,7 @@ let Tile = React.createClass({
 		}
 	},
 	componentDidUpdate: function() {
+		console.log('single tiles updating.');
 		if (this.props.currentRoute !== this.scrollUpDoneForRouteValue) {
 			//reset
 			this.scrollUpDoneForRouteValue = null;
@@ -73,7 +75,17 @@ let Tile = React.createClass({
 		}
 	},
 	onVisibilityChange : function (isVisible) {
+		let routeValue = this.props.contentRoute;
+		if (_.indexOf(routeValue, '/') < 0) {
+			routeValue = '/' + routeValue;
+		}
 	    console.log('Element #T' + this.props.tileIndex + ' is now %s', isVisible ? 'visible' : 'hidden');
+	    if (isVisible
+	    	&& routeValue !== this.props.currentRoute) {
+	    	// the user is scrolling existing content - up or down
+	    	console.log('user scrolling back to ' + routeValue + '. Update navigation accordingly.');
+	    	this.props.showPageBeingScrolledBackToRef(routeValue);
+	    }
 	  },
 	_createArticleMarkup: function() { 
 		let tile = this;
@@ -86,12 +98,12 @@ let Tile = React.createClass({
 		return (
 			<div className={classNames}>
 				<div className="page-content">
+					<div className="visibility-sensor">Visibility Sensor for #T{this.props.tileIndex}
+						<VisibilitySensor onChange={this.onVisibilityChange} />
+					</div>
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.contentRoute}</p>
 					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
 					<JumpButton rangeContentRouteMin={-100} rangeContentRouteMax={100} jumpToRouteRef={this.props.jumpToRouteRef}/>
-				</div>
-				<div className="visibility-sensor">Visibility Sensor for #T{this.props.tileIndex}
-					<VisibilitySensor onChange={this.onVisibilityChange} />
 				</div>
 			</div>
 		);

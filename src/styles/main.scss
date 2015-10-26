@@ -1,6 +1,7 @@
 body {
   margin: 0;
   padding: 0;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .jump-to-btn {
@@ -23,10 +24,12 @@ body {
 }
 
 .page-content {
+  position: relative;
   width: 80vw;
-  border: 1px black solid;
+  min-height: 90vh;
+  border: 1px lightgrey solid;
   background-color: white;
-  margin: 10px 10vw;
+  margin: 50px 10vw;
   padding: 0 5px;
 }
 
@@ -35,18 +38,17 @@ body {
 }
 
 .navigation-bar {
+  position: fixed;
   height: 5vh;
   width: 99.5vw;
   border: red 5px solid;
-  position: fixed;
   top: 0;
   display: inline-block;
 }
 
 .content-tile {
-  position: relative;
-  border: 5px dashed pink;
-  background-color: lightyellow;
+  // border: 5px dashed pink;
+  // background-color: lightyellow;
   min-height: 120vh; //no scrolling if less than viewport
 }
 
