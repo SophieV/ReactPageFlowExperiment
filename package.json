@@ -62,5 +62,8 @@
         "single"
       ]
     }
+  },
+  "dependencies": {
+    "react-visibility-sensor": "^2.1.0"
   }
 }

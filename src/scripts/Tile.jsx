@@ -1,7 +1,8 @@
 let
   React = require('react'),
   JumpButton = require('./JumpButton.jsx'),
-  $ = require('jquery');
+  $ = require('jquery'),
+  VisibilitySensor = require('react-visibility-sensor');
 
 let Tile = React.createClass({
 	componentWillUpdate: function() {
@@ -71,20 +72,15 @@ let Tile = React.createClass({
 			this.props.reEnableScrollingDetectionRef();
 		}
 	},
+	onVisibilityChange : function (isVisible) {
+	    console.log('Element #T' + this.props.tileIndex + ' is now %s', isVisible ? 'visible' : 'hidden');
+	  },
 	_createArticleMarkup: function() { 
 		let tile = this;
 		return {__html: tile.props.dataToDisplay}; 
 	},
 	render: function() {
 		let tile = this;
-		// $(function($) {
-	 //      let $appContainer = $('#app');
-
-	 //     window.onscroll = function() {
-	 //      	console.log('i am at ' + tile.getDOMNode().top);
-	 //      };
-	 //    });
-
 		let classNames = (this.props.tileIndex === this.props.minTileIndex?"content-tile first":(this.props.jumpToRouteValue === this.props.contentRoute?"content-tile jumped":"content-tile"));
 
 		return (
@@ -93,6 +89,9 @@ let Tile = React.createClass({
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.contentRoute}</p>
 					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
 					<JumpButton rangeContentRouteMin={-100} rangeContentRouteMax={100} jumpToRouteRef={this.props.jumpToRouteRef}/>
+				</div>
+				<div className="visibility-sensor">Visibility Sensor for #T{this.props.tileIndex}
+					<VisibilitySensor onChange={this.onVisibilityChange} />
 				</div>
 			</div>
 		);

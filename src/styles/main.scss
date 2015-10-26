@@ -14,6 +14,14 @@ body {
   background: lightblue;
 }
 
+.visibility-sensor {
+  position: absolute;
+  top: 70vh;
+  min-height: 20px;
+  border: 1px solid blue;
+  background-color: aliceblue;
+}
+
 .page-content {
   width: 80vw;
   border: 1px black solid;
@@ -26,10 +34,6 @@ body {
   margin: 0;
 }
 
-.data-content {
-  // margin-top: 6vh;
-}
-
 .navigation-bar {
   height: 5vh;
   width: 99.5vw;
@@ -40,6 +44,7 @@ body {
 }
 
 .content-tile {
+  position: relative;
   border: 5px dashed pink;
   background-color: lightyellow;
   min-height: 120vh; //no scrolling if less than viewport
@@ -47,7 +52,6 @@ body {
 
 .content-tile.jumped {
   background-color: lightgrey;
-  // margin-top: 6vh;
 }
 
 .content-tile.first {
