@@ -19,6 +19,12 @@ var tilesActions = {
       actionType: actionsConstants.ADD_FIRST_TILE,
       data: route
     });
+  },
+  loadTileData: function(route){
+   AppDispatcher.handleAction({
+      actionType: actionsConstants.LOAD_TILE_DATA,
+      data: route
+    }); 
   }
 };
 

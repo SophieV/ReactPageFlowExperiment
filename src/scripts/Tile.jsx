@@ -4,6 +4,7 @@ let
   $ = require('jquery'),
   _ = require('underscore'),
   VisibilitySensor = require('react-visibility-sensor'),
+  tilesActions = require('./tilesActions'),
   tilesStore = require('./tilesStore');
 
 let Tile = React.createClass({ 
@@ -19,11 +20,15 @@ let Tile = React.createClass({
 		this._visibilityDetectionEnabled = true;
 
 		// request content to display in this tile
-		this._pageContent = tilesStore.getContent(this.props.route);
+		tilesActions.loadTileData(this.props.route);
 	},
 	componentDidMount: function() {
 		if (this.props.route === this.props.routeJump) {
 			console.log('i am the new tile added at the bottom, containing the jump to content. scroll me to the top of the page.');
+			
+			// should always be expanded
+			this._contentInitDone = true;
+			
 			this._scrollBackToMe(this.getDOMNode().offsetTop);
 
 			this.props.enableScrollingDetectionRef();
@@ -50,6 +55,11 @@ let Tile = React.createClass({
 		if (this.props.currentRoute !== this._routeAlreadyScrolledTo) {
 			//reset, there has been a route change
 			this._routeAlreadyScrolledTo = null;
+		}
+
+		if (this._pageContent == null) {
+			// TODO should be more specific
+			this._pageContent = tilesStore.getContent(this.props.route);
 		}
 
 		if (this._shouldRestoreScroll 
@@ -126,7 +136,19 @@ let Tile = React.createClass({
 	},
 	_createArticleMarkup: function() { 
 		let tile = this;
-		return {__html: (tile._contentInitDone?tile._pageContent:"Loading...")}; 
+		let content;
+
+		if (tile._contentInitDone) {
+			if (tile._pageContent != null) {
+				content = tile._pageContent;
+			} else {
+				content = "Loading...";
+			}
+		} else {
+			content = "More Content Here";
+		}
+
+		return {__html: content}; 
 	},
 	_onJumpClick: function(route) {
 		this._visibilityDetectionEnabled = false;

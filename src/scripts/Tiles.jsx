@@ -13,7 +13,7 @@ let Tiles = React.createClass({
 		return {
 		  maxTileIndex: tilesStore.getMaxTileIndex(),
 		  minTileIndex: tilesStore.getMinTileIndex(),
-		  mappingContentIndexToTileIndex: []
+		  mappingRouteToTile: []
 		}
 	},
 	componentDidMount: function(){
@@ -80,7 +80,7 @@ let Tiles = React.createClass({
 	},
 	_onTilesDataChanged: function(){
 		// TODO remove
-		let lastRouteLoaded = tilesStore.getLastContentIndexGenerated();
+		let lastRouteLoaded = tilesStore.getLastRoutePopulated();
 		if (_.indexOf(lastRouteLoaded, '/') < 0) {
 			lastRouteLoaded = '/' + lastRouteLoaded;
 		}
@@ -105,7 +105,7 @@ let Tiles = React.createClass({
 		this.setState({
 		  maxTileIndex: tilesStore.getMaxTileIndex(),
 		  minTileIndex: tilesStore.getMinTileIndex(),
-		  mappingContentIndexToTileIndex: tilesStore.getContentToTilesMapping()
+		  mappingRouteToTile: tilesStore.getRouteToTilesMapping()
 		});
 	},
 	_refreshUrlRoute: function(route){
@@ -121,17 +121,17 @@ let Tiles = React.createClass({
 
 		this._refreshUrlRoute(route);
 	},
-	_jumpToRoute: function(route){
-		this._ignoreRoute = "/" + route;
-		console.log('Let\'s jump to content #' + route + ' and ignore upcoming route change.');
+	_jumpToRoute: function(requestedRoute){
+		this._ignoreRoute = "/" + requestedRoute;
+		console.log('Let\'s jump to content #' + requestedRoute + ' and ignore upcoming route change.');
 
-		let routeAlreadyLoaded = _.findWhere(this.state.mappingContentIndexToTileIndex, {contentIndex: route});
+		let routeAlreadyLoaded = _.findWhere(this.state.mappingRouteToTile, {route: requestedRoute});
 
 		if (routeAlreadyLoaded != null) {
 			console.log('existing content found. scrolling to host tile #' + routeAlreadyLoaded.tileIndex);
 			// TODO we need to trigger a state refresh so that the tile can act upon itself.
 			this._scrollDetectionEnabled = false;
-			this._routeJump = route;
+			this._routeJump = requestedRoute;
 			this.setState({'redrawNeeded': true});
 		} else {
 			console.log('content not found. adding a tile to host it.');
@@ -139,7 +139,7 @@ let Tiles = React.createClass({
 			this._inSensitiveZonePageBottom = true;
 			this._inSensitiveZonePageUp = false;
 			this._inSensitiveZoneLocked = true; 
-			this._routeJump = route;
+			this._routeJump = requestedRoute;
 			this._addTiles();
 		}
 	},
@@ -175,7 +175,7 @@ let Tiles = React.createClass({
 
 		let tileComponents = _.map(tileIndexes, currentTileIndex => (
 			<Tile tileIndex={currentTileIndex} 
-				  route={_.findWhere(this.state.mappingContentIndexToTileIndex, {tileIndex: currentTileIndex}).route} 
+				  route={_.findWhere(this.state.mappingRouteToTile, {tileIndex: currentTileIndex}).route} 
 				  minTileIndex={this.state.minTileIndex} 
 				  maxTileIndex={this.state.maxTileIndex} 
 				  currentRoute={this._currentRoute} 
