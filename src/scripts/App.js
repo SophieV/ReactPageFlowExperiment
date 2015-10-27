@@ -1,6 +1,7 @@
 let
   App = {};
   App.config = require('./config.js');
+
   App.views = {};
 
 import React from 'react'
@@ -13,8 +14,6 @@ App.views.Tiles = require('./Tiles.jsx');
 let routes = (
   <Router history={history}>
     <Route path="/" component={App.views.MainContainer}>
-      <Route path="home" component={App.views.Tiles}/>
-      <Route path="work" component={App.views.Tiles}/>
       <Route path="*" component={App.views.Tiles}/>
     </Route>
   </Router>

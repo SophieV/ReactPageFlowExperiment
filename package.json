@@ -64,6 +64,7 @@
     }
   },
   "dependencies": {
-    "react-visibility-sensor": "^2.1.0"
+    "react-visibility-sensor": "^2.1.0",
+    "sync-queue": "0.0.2"
   }
 }

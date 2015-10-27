@@ -41,6 +41,13 @@ body {
   padding: 0 5px;
 }
 
+.collapsed .page-content {
+  background-color: pink;
+  width: 100vw;
+  margin: 0;
+
+}
+
 .main-container {
   margin: 0;
 }
@@ -61,7 +68,7 @@ body {
 }
 
 .content-tile.collapsed {
-  height: 40vh;
+  height: 15vh;
   overflow: hidden;
 }
 
