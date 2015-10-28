@@ -8,7 +8,7 @@ let React = require('react'),
 
 let _store = {
   mappingRouteToTile: [],
-  maxTileIndex: -1,
+  maxTileIndex: -2,
   minTileIndex: 0,
   nextAvailableRouteToLoad: 0,
   lastRouteRequestedBelow: null,
@@ -19,7 +19,8 @@ let _store = {
   _inSensitiveZoneHappening: false,
   _routeDirectLink: null,
   _scrollDetectionEnabled: true,
-  currentRoute: null
+  routeAccessedDirectly: null,
+  routeIgnored: null
 };
 
 let findNextAvailableRoute = function(previousRoute, below) {
@@ -70,7 +71,12 @@ let addTile = function(route, below) {
 
     if (routeUsed != null) {
         if (below) {
-            _store.maxTileIndex++;
+            if (_store.maxTileIndex === -2) {
+              _store.maxTileIndex = 0;
+            } else {
+              _store.maxTileIndex++;
+            }
+            
             _store.mappingRouteToTile.push({tileIndex: _store.maxTileIndex, route: routeUsed});
             _store.lastRouteRequestedBelow = routeUsed;
             console.log('adding tile [' + _store.maxTileIndex + ':' + routeUsed + ']');
@@ -91,18 +97,14 @@ let addTile = function(route, below) {
 
 let resetStore = function () {
     _store.mappingRouteToTile = [];
-    _store.maxTileIndex = -1;
+    _store.maxTileIndex = -2;
     _store.minTileIndex = 0;
     _store.nextAvailableRouteToLoad = 0;
     _store.lastRouteRequestedBelow = null;
     _store.lastRouteRequestedAbove = null;
+    _store.lastRouteRequested = null;
+    _store.routeAccessedDirectly = null;
 }
-
-let addFirstTile = function(route) {
-    resetStore();
-    _store.currentRoute = route;
-    return addTile(route, true);
-};
 
 let tilesStore = objectAssign({}, EventEmitter.prototype, {
   addChangeListener: function(cb){
@@ -111,20 +113,23 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
   removeChangeListener: function(cb){
     this.removeListener(eventsConstants.CHANGE_EVENT, cb);
   },
-  getMaxTileIndex: function(){
+  maxTileIndex: function(){
     return _store.maxTileIndex;
   },
-  getMinTileIndex: function(){
+  minTileIndex: function(){
     return _store.minTileIndex;
   },
-  getRouteToTilesMapping: function(){
+  routeToTileMapping: function(){
     return _store.mappingRouteToTile;
   },
-  lastRequestedRoute: function() {
+  lastRouteRequested: function() {
     return _store.lastRouteRequested;
   },
-  currentRoute: function(){
-    return _store.currentRoute;
+  routeAccessedDirectly: function() {
+    return _store.routeAccessedDirectly;
+  },
+  routeIgnored: function() {
+    return _store.routeIgnored;
   }
 });
 
@@ -144,8 +149,10 @@ AppDispatcher.register(function(payload)
         }
     break;
     case actionsConstants.ADD_FIRST_TILE:
-      addFirstTile(action.data);
-      tilesStore.emit(eventsConstants.CHANGE_EVENT);
+      resetStore();
+      if (addTile(action.data, true)) {
+        tilesStore.emit(eventsConstants.CHANGE_EVENT);
+      }
     break;
     default:
       return true;

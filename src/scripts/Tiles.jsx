@@ -11,9 +11,11 @@ let
 
 function getTileHolderState(props) {
   return {
-	tileRange: _.range(tilesStore.getMinTileIndex(), tilesStore.getMaxTileIndex() + 1),
-	routeToTileMapping: tilesStore.getRouteToTilesMapping(),
-	currentRoute: props.location.pathname
+	tileRange: _.range(tilesStore.minTileIndex(), tilesStore.maxTileIndex() + 1),
+	routeToTileMapping: tilesStore.routeToTileMapping(),
+	lastRouteRequested: tilesStore.lastRouteRequested(),
+	routeAccessedDirectly: tilesStore.routeAccessedDirectly(),
+	routeIgnored: tilesStore.routeIgnored()
   };
 }
 
@@ -33,8 +35,13 @@ let TileHolder = React.createClass({
 		this._onRouteMayHaveChanged(false);
 	},
 	_onRouteMayHaveChanged: function(init){
-		if (init) {
-			tilesActions.addFirstTile(this.state.currentRoute);
+		let browserUrl = this.props.location.pathname;
+		if (browserUrl !== this.state.lastRouteRequested) {
+			if (init || browserUrl !== this.state.routeIgnored) {
+				tilesActions.addFirstTile(browserUrl);
+			} else {
+				tilesActions.addTileDown(browserUrl);
+			}
 		}
 	},
 	_onTilesInfoChanged: function(){
@@ -43,14 +50,30 @@ let TileHolder = React.createClass({
 	render: function() {
 		const UPPER_THRESHOLD = 50; //px
 
-		let tileComponents = _.map(this.state.tileRange, currentTileIndex => (
-			<Tile tileIndex={currentTileIndex} 
-				  route={_.findWhere(this.state.routeToTileMapping, {tileIndex: currentTileIndex}).route}  
-				  tileExpanded= {currentTileIndex === 0} />));
+		let tileRoute,
+			tileTopTile,
+			tileBottomTile,
+			tileAccessedDirectly;
+
+		let tilesComponent = this;
+
+		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
+			tileRoute = _.findWhere(tilesComponent.state.routeToTileMapping, {tileIndex: index}).route;
+			tileTopTile = (index === tilesComponent.state.tileRange[0]);
+			tileBottomTile = (index === tilesComponent.state.tileRange[1]);
+			tileAccessedDirectly = (tileRoute === tilesComponent.state.routeAccessedDirectly);
+
+			return (<Tile tileIndex={index} 
+						  route={tileRoute}  
+						  tileExpanded= {tileTopTile || tileAccessedDirectly}
+						  firstTile={tileTopTile}
+						  lastTile={tileBottomTile}
+						  accessedDirectly={tileAccessedDirectly} />);
+		});
 
 		return (
 			<div>
-				{tileComponents}
+				{tiles}
 			</div>
 		);
 	}

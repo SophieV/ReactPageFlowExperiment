@@ -9,11 +9,15 @@ let
 
 function getTileState(props) {
   return {
-    content: contentStore.getContent(props.route)
+    content: contentStore.routeContent(props.route),
+    contentRouteName: props.route
   };
 }
 
 let Tile = React.createClass({
+	_consoleLogTileInfo: function(message) {
+		console.log('[' + this.props.tileIndex + ':' + this.props.route + '] ' + message);
+	},
 	getInitialState: function(){
 		return getTileState(this.props);
 	},
@@ -23,16 +27,14 @@ let Tile = React.createClass({
 	componentWillUnmount: function(){
 		contentStore.removeChangeListener(this._onContentDataChanged);
 	},
-	componentWillUpdate: function() {
-	},
-	componentDidUpdate: function() {
+	componentDidUpdate: function(){
+		if (this.props.route !== this.state.contentRouteName) {
+			// the first tile may be "re-used" for another route
+			this.setState({content: null, contentRouteName: null});
+		}
 	},
 	_onContentDataChanged: function() {
-		// not triggered for first tile
 		this.setState(getTileState(this.props));
-	},
-	_consoleLogTileInfo: function(message) {
-		console.log('[' + this.props.tileIndex + ':' + this.props.route + '] ' + message);
 	},
 	_createArticleMarkup: function() { 
 		let content;
@@ -44,30 +46,36 @@ let Tile = React.createClass({
 				content = "Loading...";
 			}
 		} else {
-			content = "Check More Content Over Here";
+			content = "CTA - Check More Content Over Here";
 		}
 
 		return {__html: content}; 
 	},
 	render: function() {
-		let tileClassNames = ["content-tile"];
+		let classNames = ["content-tile"];
 
-		if (!this.props.tileExpanded) {
-			tileClassNames.push("collapsed");
+		if (this.props.tileExpanded) {
+			classNames.push("expanded");
 		} else {
-			tileClassNames.push("expanded");
-
-			if (this.props.tileIndex === this.props.minTileIndex) {
-				tileClassNames.push("first");
-			} else if (this.props.routeDirectLink === this.props.route) {
-				tileClassNames.push("jumped");
-			}
+			classNames.push("collapsed");
 		}
 
-		tileClassNames.push("t-" + this.props.tileIndex);
+		if (this.props.firstTile) {
+			classNames.push("first");
+		}
+
+		if (this.props.lastTile) {
+			classNames.push("last");
+		}
+
+		if (this.props.accessedDirectly) {
+			classNames.push("jumped");
+		}
+
+		classNames.push("t-" + this.props.tileIndex);
 
 		return (
-			<div className={tileClassNames.join(' ')}>
+			<div className={classNames.join(' ')}>
 				<div className="page-content">
 					
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.route}</p>

@@ -38,6 +38,7 @@ let retrieveFakeData = function(route) {
 
 let resetStore = function () {
     _store.contentByRoute = [];
+    _store.lastRoutePopulated = null;
 }
 
 let contentStore = objectAssign({}, EventEmitter.prototype, {
@@ -47,7 +48,7 @@ let contentStore = objectAssign({}, EventEmitter.prototype, {
   removeChangeListener: function(cb){
     this.removeListener(eventsConstants.CHANGE_EVENT, cb);
   },
-  getContent: function(routeRequested){
+  routeContent: function(routeRequested){
     let contentFound;
     let entry = _.findWhere(_store.contentByRoute, {route: routeRequested});
 
@@ -56,7 +57,7 @@ let contentStore = objectAssign({}, EventEmitter.prototype, {
     }
     return contentFound;
   },
-  getLastRoutePopulated: function() {
+  lastRoutePopulated: function() {
     return _store.lastRoutePopulated;
   }
 });
