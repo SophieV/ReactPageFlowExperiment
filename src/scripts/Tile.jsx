@@ -46,7 +46,7 @@ let Tile = React.createClass({
 				content = "Loading...";
 			}
 		} else {
-			content = "CTA - Check More Content Over Here";
+			content = "More Content Coming Here";
 		}
 
 		return {__html: content}; 
@@ -74,13 +74,27 @@ let Tile = React.createClass({
 
 		classNames.push("t-" + this.props.tileIndex);
 
+		let bottomCTA,
+			upCTA;
+
+		// if (this.state.content != null && this.props.nextRouteUp != null) {
+		// 	upCTA = <h2> There is an up CTA on this page</h2>;
+		// }
+
+		if (this.state.content != null && this.props.nextRouteDown != null) {
+			bottomCTA = <h2> There is a bottom CTA on this page</h2>;
+		}
+
 		return (
 			<div className={classNames.join(' ')}>
 				<div className="page-content">
+
+					{upCTA}
 					
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.route}</p>
 					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
 					
+					{bottomCTA}
 					
 				</div>
 			</div>

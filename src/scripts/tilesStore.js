@@ -7,28 +7,25 @@ let React = require('react'),
     eventsConstants = require('./eventsConstants');
 
 let _store = {
-  mappingRouteToTile: [],
-  maxTileIndex: -2,
+  nextFakeAvailableRouteToLoad: 0,
+  mapTileToRoute: [],
+  maxTileIndex: -2, // this value is to make sure that no tile does not give range [0]
   minTileIndex: 0,
-  nextAvailableRouteToLoad: 0,
   lastRouteRequestedBelow: null,
   lastRouteRequestedAbove: null,
   lastRouteRequested: null,
-  _inSensitiveZonePageUp: true, // starting at the top of the viewport
-  _inSensitiveZonePageBottom: false,
-  _inSensitiveZoneHappening: false,
-  _routeDirectLink: null,
-  _scrollDetectionEnabled: true,
-  routeAccessedDirectly: null,
+  routeAccessedDirectlyFromContent: null,
+  nextRouteUp: null,
+  nextRouteDown: null,
   routeIgnored: null
 };
 
-let findNextAvailableRoute = function(previousRoute, below) {
+let findNextAvailableRoute = function(previousRoute, directionBelow) {
     let route;
 
     // match from expected display order
     if (previousRoute != null) {
-        if (below) {
+        if (directionBelow) {
             if (previousRoute == "/home") {
               route = "/work";
             } 
@@ -44,66 +41,77 @@ let findNextAvailableRoute = function(previousRoute, below) {
       let routeNotRenderedYet = false;
 
       while(!routeNotRenderedYet) {
-        if (below) {
-            _store.nextAvailableRouteToLoad++;
+        if (directionBelow) {
+            _store.nextFakeAvailableRouteToLoad++;
         } else {
-           _store.nextAvailableRouteToLoad--; 
+           _store.nextFakeAvailableRouteToLoad--; 
         }
         
-        if (_.findWhere(_store.mappingRouteToTile, {route: _store.nextAvailableRouteToLoad}) == null) {
+        if (_.findWhere(_store.mapTileToRoute, {route: _store.nextFakeAvailableRouteToLoad}) == null) {
           routeNotRenderedYet = true;
         }
       }
     }
 
-    route = "/" + _store.nextAvailableRouteToLoad; 
+    route = "/" + _store.nextFakeAvailableRouteToLoad; 
 
     return route;
 }
 
-let addTile = function(route, below) {
+let addTile = function(requestedRoute, directionBelow) {
     let shouldUpdate = true;
-    let routeUsed = route;
 
-    if (routeUsed == null){
-        routeUsed = findNextAvailableRoute((below?_store.lastRouteRequestedBelow:_store.lastRouteRequestedAbove), below);  
-    }
+    if (requestedRoute != null) {
 
-    if (routeUsed != null) {
-        if (below) {
-            if (_store.maxTileIndex === -2) {
-              _store.maxTileIndex = 0;
-            } else {
-              _store.maxTileIndex++;
-            }
-            
-            _store.mappingRouteToTile.push({tileIndex: _store.maxTileIndex, route: routeUsed});
-            _store.lastRouteRequestedBelow = routeUsed;
-            console.log('adding tile [' + _store.maxTileIndex + ':' + routeUsed + ']');
-        } else {
-            _store.minTileIndex--;
-            _store.mappingRouteToTile.push({tileIndex: _store.minTileIndex, route: routeUsed});
-            _store.lastRouteRequestedAbove = routeUsed;
-            console.log('adding tile [' + _store.minTileIndex + ':' + routeUsed + ']');
-        }
+      if (directionBelow) {
 
-        _store.lastRouteRequested = routeUsed;
+          if (_store.maxTileIndex === -2) {
+            _store.maxTileIndex = 0;
+          } else {
+            _store.maxTileIndex++;
+          }
+          
+          _store.mapTileToRoute.push({tileIndex: _store.maxTileIndex, route: requestedRoute});
+          _store.lastRouteRequestedBelow = requestedRoute;
+          console.log('adding tile [' + _store.maxTileIndex + ':' + requestedRoute + ']');
+
+      } else {
+
+          _store.minTileIndex--;
+          _store.mapTileToRoute.push({tileIndex: _store.minTileIndex, route: requestedRoute});
+          _store.lastRouteRequestedAbove = requestedRoute;
+          console.log('adding tile [' + _store.minTileIndex + ':' + requestedRoute + ']');
+
+      }
+
+      _store.lastRouteRequested = requestedRoute;
+
+      _store.nextRouteDown = findNextAvailableRoute(_store.lastRouteRequestedBelow, true);
+      _store.nextRouteUp = findNextAvailableRoute(_store.lastRouteRequestedAbove, true);
+
     } else {
-    console.log('no route to load ' + (below?"below.":"above.") + " no tile will be added.");
-    shouldUpdate = false;
+      shouldUpdate = false;
     }
+
     return shouldUpdate;
 };
 
 let resetStore = function () {
-    _store.mappingRouteToTile = [];
+    _store.mapTileToRoute = [];
     _store.maxTileIndex = -2;
     _store.minTileIndex = 0;
-    _store.nextAvailableRouteToLoad = 0;
+    _store.nextFakeAvailableRouteToLoad = 0;
     _store.lastRouteRequestedBelow = null;
     _store.lastRouteRequestedAbove = null;
     _store.lastRouteRequested = null;
-    _store.routeAccessedDirectly = null;
+    _store.routeAccessedDirectlyFromContent = null;
+    _store.nextRouteDown = null;
+    _store.nextRouteUp = null;
+    _store.routeIgnored = null;
+}
+
+let ignoreRoute = function(routeToIgnore) {
+  _store.routeIgnored = routeToIgnore;
 }
 
 let tilesStore = objectAssign({}, EventEmitter.prototype, {
@@ -119,17 +127,32 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
   minTileIndex: function(){
     return _store.minTileIndex;
   },
-  routeToTileMapping: function(){
-    return _store.mappingRouteToTile;
+  mapTileToRoute: function(){
+    return _store.mapTileToRoute;
   },
   lastRouteRequested: function() {
     return _store.lastRouteRequested;
   },
-  routeAccessedDirectly: function() {
-    return _store.routeAccessedDirectly;
+  routeAccessedDirectlyFromContent: function() {
+    return _store.routeAccessedDirectlyFromContent;
   },
   routeIgnored: function() {
     return _store.routeIgnored;
+  },
+  scrollingDetectionTopEnabled: function() {
+    return false;// (_store.nextRouteUp != null);
+  },
+  scrollingDetectionBottomEnabled: function() {
+    return (_store.nextRouteDown != null);
+  },
+  scrollingDetectionEnabled: function() {
+    return (_store.nextRouteDown != null || _store.nextRouteUp != null);
+  },
+  nextRouteDown: function() {
+    return _store.nextRouteDown;
+  },
+  nextRouteUp: function() {
+    return _store.nextRouteUp;
   }
 });
 
@@ -139,14 +162,16 @@ AppDispatcher.register(function(payload)
   switch(action.actionType)
   {
     case actionsConstants.ADD_TILE_DOWN:
+      ignoreRoute(action.data);
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }
     break;
     case actionsConstants.ADD_TILE_UP:
-        if (addTile(action.data, false)) {
-            tilesStore.emit(eventsConstants.CHANGE_EVENT);
-        }
+      ignoreRoute(action.data);
+      if (addTile(action.data, false)) {
+          tilesStore.emit(eventsConstants.CHANGE_EVENT);
+      }
     break;
     case actionsConstants.ADD_FIRST_TILE:
       resetStore();
