@@ -67,8 +67,10 @@ AppDispatcher.register(function(payload)
   switch(action.actionType)
   {
     case actionsConstants.LOAD_TILE_DATA:
-      retrieveFakeData(action.data);
-      contentStore.emit(eventsConstants.CHANGE_EVENT);
+      setTimeout(function(){ 
+      	retrieveFakeData(action.data); 
+      	contentStore.emit(eventsConstants.CHANGE_EVENT);
+      }, 3000);
     break;
     default:
       return true;
