@@ -135,9 +135,13 @@ let TileHolder = React.createClass({
 		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
 
 			tileRoute = _.findWhere(tilesComponent.state.mapTileToRoute, {tileIndex: index}).route;
+
 			tileSingleTile = (index === tilesComponent.state.tileRange[0] && tilesComponent.state.tileRange.length === 1);
+
 			tileTopTile = (index === tilesComponent.state.tileRange[0]);
+
 			tileBottomTile = ((index === tilesComponent.state.tileRange[tilesComponent.state.tileRange.length-1]) || (tilesComponent.state.tileRange.length === 1 && index === tilesComponent.state.tileRange[0]));
+			
 			tileAccessedDirectly = (tileRoute === tilesComponent.state.routeAccessedDirectlyFromContent);
 
 			tileContent = contentStore.routeContent(tileRoute);

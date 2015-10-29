@@ -11,7 +11,7 @@ var JumpButton = React.createClass({
     }
   },
   _handleClick: function(event) {
-    this.props.onJumpBtnClickRef("/" + this.state.randomValue);
+    this.props.goToRouteDirectlyRef("/" + this.state.randomValue);
   },
   render: function() {
     return (

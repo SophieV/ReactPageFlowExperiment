@@ -22,6 +22,9 @@ let Tile = React.createClass({
 			this._positionRestore = 0;
 		}
 	},
+	_onVisibilityChange: function(isVisible) {
+	    this._consoleLogTileInfo('now ' + (isVisible ? 'visible' : 'hidden'));
+	},
 	_createArticleMarkup: function() { 
 		let content;
 
@@ -61,7 +64,10 @@ let Tile = React.createClass({
 		classNames.push("t-" + this.props.tileIndex);
 
 		let bottomCTA,
-			upCTA;
+			upCTA,
+			directLinkButton,
+			visibilityMarkerUp,
+			visibilityMarkerDown;
 
 		if (this.props.firstTile && this.props.content != null && this.props.nextRouteUp != null) {
 			upCTA = <h2> There is an up CTA to {this.props.nextRouteUp}</h2>;
@@ -71,14 +77,31 @@ let Tile = React.createClass({
 			bottomCTA = <h2> There is a bottom CTA to {this.props.nextRouteDown}</h2>;
 		}
 
+		if (this.props.content != null) {
+			visibilityMarkerUp = (<div className="visibility-sensor-up">Visibility Sensor for #T{this.props.tileIndex} #C{this.props.route}
+						<VisibilitySensor onChange={this._onVisibilityChange} />
+					</div>);
+
+			visibilityMarkerDown = (<div className="visibility-sensor-down">Visibility Sensor for #T{this.props.tileIndex} #C{this.props.route}
+						<VisibilitySensor onChange={this._onVisibilityChange} />
+					</div>);
+
+			directLinkButton = (<JumpButton rangeMin={-100} rangeMax={100} goToRouteDirectlyRef={this.props.goToRouteDirectlyRef}/>);
+		}
+
 		return (
 			<div className={classNames.join(' ')}>
 				<div className="page-content">
+					{visibilityMarkerUp}
 
 					{upCTA}
 					
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.route}</p>
 					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
+
+					{directLinkButton}
+
+					{visibilityMarkerDown}
 					
 					{bottomCTA}
 					
