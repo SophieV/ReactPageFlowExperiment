@@ -210,6 +210,7 @@ AppDispatcher.register(function(payload)
     break;
     case actionsConstants.GO_TO_ROUTE:
       accessRouteDirectly(action.data);
+      ignoreRoute(action.data);
 
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
