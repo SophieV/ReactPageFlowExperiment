@@ -59,6 +59,9 @@ let contentStore = objectAssign({}, EventEmitter.prototype, {
   },
   lastRoutePopulated: function() {
     return _store.lastRoutePopulated;
+  },
+  contentByRoute: function() {
+  	return _store.contentByRoute;
   }
 });
 

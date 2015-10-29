@@ -7,6 +7,8 @@ let React = require('react'),
     eventsConstants = require('./eventsConstants');
 
 let _store = {
+  MAX_ROUTE_FAKE: 10,
+  MIN_ROUTE_FAKE: -6,
   nextFakeAvailableRouteToLoad: 0,
   mapTileToRoute: [],
   maxTileIndex: -2, // this value is to make sure that no tile does not give range [0]
@@ -40,7 +42,8 @@ let findNextAvailableRoute = function(previousRoute, directionBelow) {
     if (route == null) {
       let routeNotRenderedYet = false;
 
-      while(!routeNotRenderedYet) {
+      while(!routeNotRenderedYet && _store.nextFakeAvailableRouteToLoad <= _store.MAX_ROUTE_FAKE && _store.nextFakeAvailableRouteToLoad >= _store.MIN_ROUTE_FAKE) {
+
         if (directionBelow) {
             _store.nextFakeAvailableRouteToLoad++;
         } else {
@@ -49,11 +52,11 @@ let findNextAvailableRoute = function(previousRoute, directionBelow) {
         
         if (_.findWhere(_store.mapTileToRoute, {route: _store.nextFakeAvailableRouteToLoad}) == null) {
           routeNotRenderedYet = true;
+          route = "/" + _store.nextFakeAvailableRouteToLoad;
         }
+
       }
     }
-
-    route = "/" + _store.nextFakeAvailableRouteToLoad; 
 
     return route;
 }

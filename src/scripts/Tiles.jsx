@@ -3,6 +3,7 @@ let
   $ = require('jquery'),
   _ = require('underscore'),
   tilesStore = require('./tilesStore'),
+  contentStore = require('./contentStore'),
   contentActions = require('./contentActions'),
   tilesActions = require('./tilesActions'),
   Tile = require('./Tile.jsx');
@@ -30,6 +31,8 @@ let TileHolder = React.createClass({
 	},
 	componentDidMount: function(){
 		tilesStore.addChangeListener(this._onTilesInfoChanged);
+		// warning message of too many event listeners if located in Tile
+		contentStore.addChangeListener(this._onContentDataChanged);
 
 		this._initDone = false;
 
@@ -37,6 +40,7 @@ let TileHolder = React.createClass({
 	},
 	componentWillUnmount: function(){
 		tilesStore.removeChangeListener(this._onTilesInfoChanged);
+		contentStore.removeChangeListener(this._onContentDataChanged);
 	},
 	componentDidUpdate: function() {
 		this._onRouteMayHaveChanged();
@@ -63,8 +67,10 @@ let TileHolder = React.createClass({
     	if (this._initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored) {
     		this._updateRouteDisplayedToUser(newState.routeIgnored);
     	}
-
-    	this._lastRouteTriggeredPending = false;
+	},
+	_onContentDataChanged: function() {
+		// trigger redraw ; the content store is accessed directly for each tile
+		this.setState({'redrawNeeded': true});
 	},
 	_addingScrollingDetection: function(tilesComponent) {
 		const UPPER_THRESHOLD = 50; //px
@@ -113,23 +119,33 @@ let TileHolder = React.createClass({
 		let tileRoute,
 			tileTopTile,
 			tileBottomTile,
-			tileAccessedDirectly;
+			tileAccessedDirectly,
+			tileContent;
 
 		let tilesComponent = this;
 
 		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
+
 			tileRoute = _.findWhere(tilesComponent.state.mapTileToRoute, {tileIndex: index}).route;
 			tileTopTile = (index === tilesComponent.state.tileRange[0]);
-			tileBottomTile = (index === tilesComponent.state.tileRange[1]);
+			tileBottomTile = ((index === tilesComponent.state.tileRange[tilesComponent.state.tileRange.length-1]) || (tilesComponent.state.tileRange.length === 1 && index === tilesComponent.state.tileRange[0]));
 			tileAccessedDirectly = (tileRoute === tilesComponent.state.routeAccessedDirectlyFromContent);
 
+			tileContent = contentStore.routeContent(tileRoute);
+
+			if (tileRoute === tilesComponent.state.lastRouteRequested) {
+				tilesComponent._lastRouteTriggeredPending = (tileContent == null);
+			}
+
 			return (<Tile tileIndex={index} 
-						  route={tileRoute}  
-						  tileExpanded= {tileTopTile || tileAccessedDirectly}
+						  route={tileRoute} 
+						  content={tileContent} 
+						  tileExpanded= {tileContent != null || tileTopTile || tileAccessedDirectly}
 						  firstTile={tileTopTile}
 						  lastTile={tileBottomTile}
 						  accessedDirectly={tileAccessedDirectly}
 						  nextRouteDown={tilesComponent.state.nextRouteDown} />);
+
 		});
 
 		this._addingScrollingDetection(tilesComponent);
