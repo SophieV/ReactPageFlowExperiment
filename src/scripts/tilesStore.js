@@ -7,8 +7,8 @@ let React = require('react'),
     eventsConstants = require('./eventsConstants');
 
 let _store = {
-  MAX_ROUTE_FAKE: 10,
-  MIN_ROUTE_FAKE: -6,
+  MAX_ROUTE_FAKE: 5,
+  MIN_ROUTE_FAKE: -3,
   nextFakeAvailableRouteToLoad: 0,
   mapTileToRoute: [],
   maxTileIndex: -2, // this value is to make sure that no tile does not give range [0]
@@ -19,7 +19,8 @@ let _store = {
   routeAccessedDirectlyFromContent: null,
   nextRouteUp: null,
   nextRouteDown: null,
-  routeIgnored: null
+  routeIgnored: null,
+  firstRoute: null
 };
 
 let findNextAvailableRoute = function(previousRoute, directionBelow) {
@@ -50,7 +51,7 @@ let findNextAvailableRoute = function(previousRoute, directionBelow) {
            _store.nextFakeAvailableRouteToLoad--; 
         }
         
-        if (_.findWhere(_store.mapTileToRoute, {route: _store.nextFakeAvailableRouteToLoad}) == null) {
+        if (_.findWhere(_store.mapTileToRoute, {route: "/" + _store.nextFakeAvailableRouteToLoad}) == null) {
           routeNotRenderedYet = true;
           route = "/" + _store.nextFakeAvailableRouteToLoad;
         }
@@ -90,7 +91,7 @@ let addTile = function(requestedRoute, directionBelow) {
       _store.lastRouteRequested = requestedRoute;
 
       _store.nextRouteDown = findNextAvailableRoute(_store.lastRouteRequestedBelow, true);
-      _store.nextRouteUp = findNextAvailableRoute(_store.lastRouteRequestedAbove, true);
+      _store.nextRouteUp = findNextAvailableRoute(_store.lastRouteRequestedAbove, false);
 
     } else {
       shouldUpdate = false;
@@ -111,10 +112,15 @@ let resetStore = function () {
     _store.nextRouteDown = null;
     _store.nextRouteUp = null;
     _store.routeIgnored = null;
+    _store.firstRoute = null;
 }
 
 let ignoreRoute = function(routeToIgnore) {
   _store.routeIgnored = routeToIgnore;
+}
+
+let updateFirstRoute = function(route) {
+  _store.firstRoute = route;
 }
 
 let tilesStore = objectAssign({}, EventEmitter.prototype, {
@@ -143,7 +149,8 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
     return _store.routeIgnored;
   },
   scrollingDetectionTopEnabled: function() {
-    return false;// (_store.nextRouteUp != null);
+    // else the scrolling will immediately add a tile up
+    return (_store.nextRouteUp != null && _store.firstRoute != _store.lastRouteRequested);
   },
   scrollingDetectionBottomEnabled: function() {
     return (_store.nextRouteDown != null);
@@ -156,6 +163,16 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
   },
   nextRouteUp: function() {
     return _store.nextRouteUp;
+  },
+  currentRouteTileShouldScrollToTop: function() {
+    return (_store.lastRouteRequested === _store.firstRoute || _store.lastRouteRequested == _store.routeAccessedDirectlyFromContent);
+  },
+  previousRouteTileShouldScrollToTop: function() {
+    let lastRouteRequestedMapping = _.findWhere(_store.mapTileToRoute, {route: _store.lastRouteRequested});
+
+    let lastRouteRequestedIsTop = lastRouteRequestedMapping != null && lastRouteRequestedMapping.tileIndex === _store.minTileIndex;
+
+    return lastRouteRequestedIsTop;
   }
 });
 
@@ -178,6 +195,7 @@ AppDispatcher.register(function(payload)
     break;
     case actionsConstants.ADD_FIRST_TILE:
       resetStore();
+      updateFirstRoute(action.data);
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }

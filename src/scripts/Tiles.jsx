@@ -21,7 +21,9 @@ function getTileHolderState(props) {
 	scrollingDetectionBottomEnabled: tilesStore.scrollingDetectionBottomEnabled(),
 	scrollingDetectionEnabled: tilesStore.scrollingDetectionEnabled(),
 	nextRouteDown: tilesStore.nextRouteDown(),
-	nextRouteUp: tilesStore.nextRouteUp()
+	nextRouteUp: tilesStore.nextRouteUp(),
+	currentRouteTileShouldScrollToTop: tilesStore.currentRouteTileShouldScrollToTop(),
+	previousRouteTileShouldScrollToTop: tilesStore.previousRouteTileShouldScrollToTop()
   };
 }
 
@@ -35,6 +37,7 @@ let TileHolder = React.createClass({
 		contentStore.addChangeListener(this._onContentDataChanged);
 
 		this._initDone = false;
+		this._lastBrowserRoute = null;
 
 		this._onRouteMayHaveChanged();
 	},
@@ -51,12 +54,15 @@ let TileHolder = React.createClass({
 	_onRouteMayHaveChanged: function(init){
 		let browserUrl = this.props.location.pathname;
 
-		if (!this._initDone || (browserUrl !== this.state.lastRouteRequested && this.state.lastRouteRequested !== this.state.routeIgnored)) {
+		// TODO what if next or previous is the same link ?! and it was accessed by the navbar directly
+		let userTriggered = (browserUrl === this.state.routeIgnored || browserUrl === this.state.nextRouteDown || browserUrl === this.state.nextRouteUp || browserUrl === this.state.routeAccessedDirectlyFromContent);
 
+		if (!this._initDone || (browserUrl !== this._lastBrowserRoute && browserUrl !== this.state.lastRouteRequested && !userTriggered)) {
 			this._initDone = true;
 			tilesActions.addFirstTile(browserUrl);
-
 		}
+
+		this._lastBrowserRoute = browserUrl;
 	},
 	_onTilesInfoChanged: function(){
 		let newState = getTileHolderState(this.props);
@@ -120,31 +126,44 @@ let TileHolder = React.createClass({
 			tileTopTile,
 			tileBottomTile,
 			tileAccessedDirectly,
-			tileContent;
+			tileContent,
+			tileSingleTile,
+			tileShouldScrollTop;
 
 		let tilesComponent = this;
 
 		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
 
 			tileRoute = _.findWhere(tilesComponent.state.mapTileToRoute, {tileIndex: index}).route;
+			tileSingleTile = (index === tilesComponent.state.tileRange[0] && tilesComponent.state.tileRange.length === 1);
 			tileTopTile = (index === tilesComponent.state.tileRange[0]);
 			tileBottomTile = ((index === tilesComponent.state.tileRange[tilesComponent.state.tileRange.length-1]) || (tilesComponent.state.tileRange.length === 1 && index === tilesComponent.state.tileRange[0]));
 			tileAccessedDirectly = (tileRoute === tilesComponent.state.routeAccessedDirectlyFromContent);
 
 			tileContent = contentStore.routeContent(tileRoute);
 
+			tileShouldScrollTop = false;
+
 			if (tileRoute === tilesComponent.state.lastRouteRequested) {
 				tilesComponent._lastRouteTriggeredPending = (tileContent == null);
+
+				tileShouldScrollTop = tilesComponent.state.currentRouteTileShouldScrollToTop;
+			}
+
+			if (tilesComponent.state.previousRouteTileShouldScrollToTop && index === tilesComponent.state.tileRange[1]) {
+				tileShouldScrollTop = true;
 			}
 
 			return (<Tile tileIndex={index} 
 						  route={tileRoute} 
 						  content={tileContent} 
-						  tileExpanded= {tileContent != null || tileTopTile || tileAccessedDirectly}
+						  tileExpanded= {tileContent != null || tileSingleTile || tileAccessedDirectly}
 						  firstTile={tileTopTile}
 						  lastTile={tileBottomTile}
 						  accessedDirectly={tileAccessedDirectly}
-						  nextRouteDown={tilesComponent.state.nextRouteDown} />);
+						  scrollBackToMe={tileShouldScrollTop}
+						  nextRouteDown={tilesComponent.state.nextRouteDown}
+						  nextRouteUp={tilesComponent.state.nextRouteUp} />);
 
 		});
 

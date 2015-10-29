@@ -9,6 +9,19 @@ let Tile = React.createClass({
 	_consoleLogTileInfo: function(message) {
 		console.log('[' + this.props.tileIndex + ':' + this.props.route + '] ' + message);
 	},
+	componentDidMount: function() {
+		this._positionRestore = 0;
+	},
+	componentWillUpdate: function() {
+		this._positionRestore = this.getDOMNode().offsetTop;
+	},
+	componentDidUpdate: function() {
+		if (this.props.scrollBackToMe) {
+			$(window).scrollTop(this._positionRestore);
+			this._consoleLogTileInfo('scrolled window back to me');
+			this._positionRestore = 0;
+		}
+	},
 	_createArticleMarkup: function() { 
 		let content;
 
@@ -51,11 +64,11 @@ let Tile = React.createClass({
 			upCTA;
 
 		if (this.props.firstTile && this.props.content != null && this.props.nextRouteUp != null) {
-			upCTA = <h2> There is an up CTA on this page</h2>;
+			upCTA = <h2> There is an up CTA to {this.props.nextRouteUp}</h2>;
 		}
 
 		if (this.props.lastTile && this.props.content != null && this.props.nextRouteDown != null) {
-			bottomCTA = <h2> There is a bottom CTA on this page</h2>;
+			bottomCTA = <h2> There is a bottom CTA to {this.props.nextRouteDown}</h2>;
 		}
 
 		return (
