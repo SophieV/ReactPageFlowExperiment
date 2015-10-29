@@ -29,7 +29,7 @@ var tilesActions = {
     });
     // loading of first tile content is triggered here because otherwise the dispatcher throws an exception. an action cannot be triggered during the unfolding of a previous action.
     AppDispatcher.handleAction({
-      actionType: actionsConstants.LOAD_TILE_DATA,
+      actionType: actionsConstants.LOAD_FIRST_TILE_DATA,
       data: route
     });
   }

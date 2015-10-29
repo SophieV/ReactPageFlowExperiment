@@ -1,7 +1,13 @@
 let AppDispatcher = require('./AppDispatcher'),
 	actionsConstants = require('./actionsConstants');
 
-var tilesActions = {
+var contentActions = {
+  loadFirstRouteData: function(route){
+   Dispatcher.handleAction({
+      actionType: actionsConstants.LOAD_FIRST_TILE_DATA,
+      data: route
+    }); 
+  },
   loadRouteData: function(route){
    Dispatcher.handleAction({
       actionType: actionsConstants.LOAD_TILE_DATA,
@@ -10,4 +16,4 @@ var tilesActions = {
   }
 };
 
-module.exports = tilesActions;
+module.exports = contentActions;

@@ -76,6 +76,13 @@ AppDispatcher.register(function(payload)
       	contentStore.emit(eventsConstants.CHANGE_EVENT);
       }, 3000);
     break;
+    case actionsConstants.LOAD_FIRST_TILE_DATA:
+      resetStore();
+      setTimeout(function(){ 
+      	retrieveFakeData(action.data); 
+      	contentStore.emit(eventsConstants.CHANGE_EVENT);
+      }, 3000);
+    break;
     default:
       return true;
   }
