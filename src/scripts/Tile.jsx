@@ -11,19 +11,29 @@ let Tile = React.createClass({
 	},
 	componentDidMount: function() {
 		this._positionRestore = 0;
+		this._visible = false;
+		this._lastRouteScrolledBack = null;
 	},
 	componentWillUpdate: function() {
 		this._positionRestore = this.getDOMNode().offsetTop;
 	},
 	componentDidUpdate: function() {
-		if (this.props.scrollBackToMe) {
+		if (this.props.scrollBackToMe && this._lastRouteScrolledBack !== this.props.route) {
+			// the scrolling should happen once, not every time some value of the state received has changed
 			$(window).scrollTop(this._positionRestore);
 			this._consoleLogTileInfo('scrolled window back to me');
 			this._positionRestore = 0;
+			this._lastRouteScrolledBack = this.props.route;
 		}
 	},
-	_onVisibilityChange: function(isVisible) {
-	    this._consoleLogTileInfo('now ' + (isVisible ? 'visible' : 'hidden'));
+	_onMarkerVisibilityChange: function(isVisible) {
+		if (!this.props.lastRouteTriggeredPendingRef && isVisible !== this._visible) {
+			this._visible = isVisible;
+
+			if (isVisible) {
+				this._consoleLogTileInfo('one of the markers now ' + (isVisible ? 'visible' : 'hidden'));
+			}
+		}
 	},
 	_createArticleMarkup: function() { 
 		let content;
@@ -79,11 +89,11 @@ let Tile = React.createClass({
 
 		if (this.props.content != null) {
 			visibilityMarkerUp = (<div className="visibility-sensor-up">Visibility Sensor for #T{this.props.tileIndex} #C{this.props.route}
-						<VisibilitySensor onChange={this._onVisibilityChange} />
+						<VisibilitySensor onChange={this._onMarkerVisibilityChange} />
 					</div>);
 
 			visibilityMarkerDown = (<div className="visibility-sensor-down">Visibility Sensor for #T{this.props.tileIndex} #C{this.props.route}
-						<VisibilitySensor onChange={this._onVisibilityChange} />
+						<VisibilitySensor onChange={this._onMarkerVisibilityChange} />
 					</div>);
 
 			directLinkButton = (<JumpButton rangeMin={-100} rangeMax={100} goToRouteDirectlyRef={this.props.goToRouteDirectlyRef}/>);

@@ -124,6 +124,7 @@ let TileHolder = React.createClass({
 	render: function() {
 		let tileRoute,
 			tileTopTile,
+			topTileContentLoaded,
 			tileBottomTile,
 			tileAccessedDirectly,
 			tileContent,
@@ -131,6 +132,12 @@ let TileHolder = React.createClass({
 			tileShouldScrollTop;
 
 		let tilesComponent = this;
+
+		topTileContentLoaded = false;
+
+		if (tilesComponent.state.tileRange.length > 0) {
+			topTileContentLoaded = (contentStore.routeContent(_.findWhere(tilesComponent.state.mapTileToRoute, {tileIndex: tilesComponent.state.tileRange[0]}).route) != null);
+		}
 
 		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
 
@@ -154,7 +161,8 @@ let TileHolder = React.createClass({
 				tileShouldScrollTop = tilesComponent.state.currentRouteTileShouldScrollToTop;
 			}
 
-			if (tilesComponent.state.previousRouteTileShouldScrollToTop && index === tilesComponent.state.tileRange[1]) {
+			if (tilesComponent.state.previousRouteTileShouldScrollToTop && index === tilesComponent.state.tileRange[1] && topTileContentLoaded) {
+				// scroll only once the content of the tile above has been loaded - it's what's causing the jump in the page
 				tileShouldScrollTop = true;
 			}
 
@@ -167,7 +175,8 @@ let TileHolder = React.createClass({
 						  accessedDirectly={tileAccessedDirectly}
 						  scrollBackToMe={tileShouldScrollTop}
 						  nextRouteDown={tilesComponent.state.nextRouteDown}
-						  nextRouteUp={tilesComponent.state.nextRouteUp} />);
+						  nextRouteUp={tilesComponent.state.nextRouteUp}
+						  lastRouteTriggeredPendingRef={tilesComponent._lastRouteTriggeredPending} />);
 
 		});
 
