@@ -32,6 +32,22 @@ var tilesActions = {
       actionType: actionsConstants.LOAD_FIRST_TILE_DATA,
       data: route
     });
+  },
+  goToRoute: function(route){
+    AppDispatcher.handleAction({
+      actionType: actionsConstants.GO_TO_ROUTE,
+      data: route
+    });
+    AppDispatcher.handleAction({
+      actionType: actionsConstants.LOAD_TILE_DATA,
+      data: route
+    });
+  },
+  goToExistingRoute: function(route){
+    AppDispatcher.handleAction({
+      actionType: actionsConstants.GO_TO_EXISTING_ROUTE,
+      data: route
+    });
   }
 };
 

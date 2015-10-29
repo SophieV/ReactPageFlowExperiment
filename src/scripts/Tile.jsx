@@ -21,7 +21,7 @@ let Tile = React.createClass({
 		if (this.props.scrollBackToMe && this._lastRouteScrolledBack !== this.props.route) {
 			// the scrolling should happen once, not every time some value of the state received has changed
 			$(window).scrollTop(this._positionRestore);
-			this._consoleLogTileInfo('scrolled window back to me');
+			this._consoleLogTileInfo('scrolled window to me');
 			this._positionRestore = 0;
 			this._lastRouteScrolledBack = this.props.route;
 		}

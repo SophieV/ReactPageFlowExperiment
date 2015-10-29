@@ -72,7 +72,14 @@ let TileHolder = React.createClass({
     	}
 	},
 	_onGoToRouteDirectly: function(requestedRoute) {
-		console.log('go directly to ' + requestedRoute);
+		let routeAlreadyInView = false;
+		let assignedTileEntry = _.findWhere(this.state.mapTileToRoute, {route: requestedRoute});
+
+		if (assignedTileEntry != null) {
+			tilesActions.goToExistingRoute(requestedRoute);
+		} else {
+			tilesActions.goToRoute(requestedRoute);
+		}
 	},
 	_onContentDataChanged: function() {
 		// trigger redraw ; the content store is accessed directly for each tile

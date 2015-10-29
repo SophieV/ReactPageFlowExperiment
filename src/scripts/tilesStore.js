@@ -88,10 +88,7 @@ let addTile = function(requestedRoute, directionBelow) {
 
       }
 
-      _store.lastRouteRequested = requestedRoute;
-
-      _store.nextRouteDown = findNextAvailableRoute(_store.lastRouteRequestedBelow, true);
-      _store.nextRouteUp = findNextAvailableRoute(_store.lastRouteRequestedAbove, false);
+      updateNavigationInfo(requestedRoute);
 
     } else {
       shouldUpdate = false;
@@ -99,6 +96,17 @@ let addTile = function(requestedRoute, directionBelow) {
 
     return shouldUpdate;
 };
+
+let accessRouteDirectly = function(route) {
+  _store.routeAccessedDirectlyFromContent = route;
+}
+
+let updateNavigationInfo = function(requestedRoute) {
+  _store.lastRouteRequested = requestedRoute;
+
+  _store.nextRouteDown = findNextAvailableRoute(_store.lastRouteRequestedBelow, true);
+  _store.nextRouteUp = findNextAvailableRoute(_store.lastRouteRequestedAbove, false);
+}
 
 let resetStore = function () {
     _store.mapTileToRoute = [];
@@ -199,6 +207,20 @@ AppDispatcher.register(function(payload)
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }
+    break;
+    case actionsConstants.GO_TO_ROUTE:
+      accessRouteDirectly(action.data);
+
+      if (addTile(action.data, true)) {
+        tilesStore.emit(eventsConstants.CHANGE_EVENT);
+      }
+    break;
+    case actionsConstants.GO_TO_EXISTING_ROUTE:
+      accessRouteDirectly(action.data);
+      ignoreRoute(action.data);
+      updateNavigationInfo(action.data);
+
+      tilesStore.emit(eventsConstants.CHANGE_EVENT);
     break;
     default:
       return true;
