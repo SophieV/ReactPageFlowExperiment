@@ -54,10 +54,7 @@ let TileHolder = React.createClass({
 	_onRouteMayHaveChanged: function(init){
 		let browserUrl = this.props.location.pathname;
 
-		// TODO what if next or previous is the same link ?! and it was accessed by the navbar directly
-		let userTriggered = (browserUrl === this.state.routeIgnored || browserUrl === this.state.nextRouteDown || browserUrl === this.state.nextRouteUp || browserUrl === this.state.routeAccessedDirectlyFromContent);
-
-		if (!this._initDone || (browserUrl !== this._lastBrowserRoute && browserUrl !== this.state.lastRouteRequested && !userTriggered)) {
+		if (!this._initDone || browserUrl !== this._lastBrowserRoute && browserUrl !== this.state.routeIgnored) {
 			this._initDone = true;
 			tilesActions.addFirstTile(browserUrl);
 		}
@@ -73,6 +70,9 @@ let TileHolder = React.createClass({
     	if (this._initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored) {
     		this._updateRouteDisplayedToUser(newState.routeIgnored);
     	}
+	},
+	_onGoToRouteDirectly: function(requestedRoute) {
+		console.log('go directly to ' + requestedRoute);
 	},
 	_onContentDataChanged: function() {
 		// trigger redraw ; the content store is accessed directly for each tile
@@ -176,7 +176,8 @@ let TileHolder = React.createClass({
 						  scrollBackToMe={tileShouldScrollTop}
 						  nextRouteDown={tilesComponent.state.nextRouteDown}
 						  nextRouteUp={tilesComponent.state.nextRouteUp}
-						  lastRouteTriggeredPendingRef={tilesComponent._lastRouteTriggeredPending} />);
+						  lastRouteTriggeredPendingRef={tilesComponent._lastRouteTriggeredPending}
+						  	goToRouteDirectlyRef={tilesComponent._onGoToRouteDirectly} />);
 
 		});
 

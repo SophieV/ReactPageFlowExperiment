@@ -14,10 +14,12 @@ var JumpButton = React.createClass({
     this.props.goToRouteDirectlyRef("/" + this.state.randomValue);
   },
   render: function() {
+    // do not use a Link because it will update the route in the browser before the click is handled
+    // in other words, no chance to set a flag to ignore the route change
     return (
-      <p className="jump-to-btn" onClick={this._handleClick}>
-        <Link to={"/" + this.state.randomValue}>Jump to tile #C{this.state.randomValue}</Link>
-      </p>
+      <a className="jump-to-btn" onClick={this._handleClick}>
+        Jump to tile #C{this.state.randomValue}
+      </a>
     );
   }
 });
