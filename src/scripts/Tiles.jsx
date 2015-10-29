@@ -67,7 +67,7 @@ let TileHolder = React.createClass({
 
     	let browserUrl = this.props.location.pathname;
 
-    	if (this._initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored) {
+    	if (this._initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored && browserUrl) {
     		this._updateRouteDisplayedToUser(newState.routeIgnored);
     	}
 	},
@@ -138,13 +138,19 @@ let TileHolder = React.createClass({
 			tileSingleTile,
 			tileShouldScrollTop;
 
-		let tilesComponent = this;
-
 		topTileContentLoaded = false;
 
-		if (tilesComponent.state.tileRange.length > 0) {
-			topTileContentLoaded = (contentStore.routeContent(_.findWhere(tilesComponent.state.mapTileToRoute, {tileIndex: tilesComponent.state.tileRange[0]}).route) != null);
+		if (this.state.tileRange.length > 0) {
+			topTileContentLoaded = (contentStore.routeContent(_.findWhere(this.state.mapTileToRoute, {tileIndex: this.state.tileRange[0]}).route) != null);
 		}
+
+		if (this.state.lastRouteRequested != null) {
+			// make sure that the variable is refreshed for all the tiles - else there could a situation where the state hold in each of the tiles varies
+			this._lastRouteTriggeredPending = (contentStore.routeContent(this.state.lastRouteRequested) == null);
+			// console.log('action still undergoing: ' + this._lastRouteTriggeredPending);
+		}
+
+		let tilesComponent = this;
 
 		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
 
@@ -163,8 +169,6 @@ let TileHolder = React.createClass({
 			tileShouldScrollTop = false;
 
 			if (tileRoute === tilesComponent.state.lastRouteRequested) {
-				tilesComponent._lastRouteTriggeredPending = (tileContent == null);
-
 				tileShouldScrollTop = tilesComponent.state.currentRouteTileShouldScrollToTop;
 			}
 
@@ -184,7 +188,7 @@ let TileHolder = React.createClass({
 						  nextRouteDown={tilesComponent.state.nextRouteDown}
 						  nextRouteUp={tilesComponent.state.nextRouteUp}
 						  lastRouteTriggeredPendingRef={tilesComponent._lastRouteTriggeredPending}
-						  	goToRouteDirectlyRef={tilesComponent._onGoToRouteDirectly} />);
+						  goToRouteDirectlyRef={tilesComponent._onGoToRouteDirectly} />);
 
 		});
 

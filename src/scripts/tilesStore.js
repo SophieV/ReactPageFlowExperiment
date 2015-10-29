@@ -172,6 +172,9 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
   nextRouteUp: function() {
     return _store.nextRouteUp;
   },
+  lastRouteTriggeredPending: function() {
+    return false;
+  },
   currentRouteTileShouldScrollToTop: function() {
     return (_store.lastRouteRequested === _store.firstRoute || _store.lastRouteRequested == _store.routeAccessedDirectlyFromContent);
   },
