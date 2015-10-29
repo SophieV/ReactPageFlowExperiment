@@ -1,6 +1,9 @@
 let
   React = require('react'),
   JumpButton = require('./JumpButton.jsx'),
+  PageHome = require('./PageHome.jsx'),
+  PageWork = require('./PageWork.jsx'),
+  PageDefault = require('./PageDefault.jsx'),
   $ = require('jquery'),
   _ = require('underscore'),
   VisibilitySensor = require('react-visibility-sensor');
@@ -74,7 +77,8 @@ let Tile = React.createClass({
 
 		classNames.push("t-" + this.props.tileIndex);
 
-		let bottomCTA,
+		let pageContent,
+			bottomCTA,
 			upCTA,
 			directLinkButton,
 			visibilityMarkerUp,
@@ -100,6 +104,18 @@ let Tile = React.createClass({
 			directLinkButton = (<JumpButton rangeMin={-100} rangeMax={100} goToRouteDirectlyRef={this.props.goToRouteDirectlyRef}/>);
 		}
 
+		switch(this.props.route) {
+			case "/home":
+				pageContent = <PageHome contentReady={this.props.content != null} content={this._createArticleMarkup()}/>;
+			break;
+			case "/work":
+				pageContent = <PageWork contentReady={this.props.content != null} content={this._createArticleMarkup()}/>;
+			break;
+			default:
+				pageContent = <PageDefault contentReady={this.props.content != null} content={this._createArticleMarkup()}/>;
+			break;
+		}
+
 		return (
 			<div className={classNames.join(' ')}>
 				<div className="page-content">
@@ -108,7 +124,8 @@ let Tile = React.createClass({
 					{upCTA}
 					
 					<p>Tile #{this.props.tileIndex} : content of #{this.props.route}</p>
-					<div dangerouslySetInnerHTML={this._createArticleMarkup()}></div>
+
+					{pageContent}
 
 					{directLinkButton}
 
