@@ -18,7 +18,7 @@ let Tile = React.createClass({
 		this._positionRestore = this.getDOMNode().offsetTop;
 	},
 	componentDidUpdate: function() {
-		if (this.props.scrollBackToMe && this._lastRouteScrolledBack !== this.props.route) {
+		if (this.props.scrollBackToMe && (this._lastRouteScrolledBack !== this.props.route || this.props.newPageReset)) {
 			// the scrolling should happen once, not every time some value of the state received has changed
 			$(window).scrollTop(this._positionRestore);
 			this._consoleLogTileInfo('scrolled window to me');
@@ -32,6 +32,7 @@ let Tile = React.createClass({
 
 			if (isVisible) {
 				this._consoleLogTileInfo('one of the markers now ' + (isVisible ? 'visible' : 'hidden'));
+				this.props.onTileVisibilityChangeRef(this.props.route);
 			}
 		}
 	},

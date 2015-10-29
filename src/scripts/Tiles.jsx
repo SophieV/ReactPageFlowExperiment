@@ -67,7 +67,7 @@ let TileHolder = React.createClass({
 
     	let browserUrl = this.props.location.pathname;
 
-    	if (this._initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored && browserUrl) {
+    	if (this._initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored) {
     		this._updateRouteDisplayedToUser(newState.routeIgnored);
     	}
 	},
@@ -79,6 +79,11 @@ let TileHolder = React.createClass({
 			tilesActions.goToExistingRoute(requestedRoute);
 		} else {
 			tilesActions.goToRoute(requestedRoute);
+		}
+	},
+	_onTileVisibilityChange: function(route) {
+		if (this.props.location.pathname !== route) {
+			tilesActions.routeBeingViewed(route);
 		}
 	},
 	_onContentDataChanged: function() {
@@ -147,7 +152,7 @@ let TileHolder = React.createClass({
 		if (this.state.lastRouteRequested != null) {
 			// make sure that the variable is refreshed for all the tiles - else there could a situation where the state hold in each of the tiles varies
 			this._lastRouteTriggeredPending = (contentStore.routeContent(this.state.lastRouteRequested) == null);
-			// console.log('action still undergoing: ' + this._lastRouteTriggeredPending);
+			console.log('action still undergoing: ' + this._lastRouteTriggeredPending);
 		}
 
 		let tilesComponent = this;
@@ -168,8 +173,8 @@ let TileHolder = React.createClass({
 
 			tileShouldScrollTop = false;
 
-			if (tileRoute === tilesComponent.state.lastRouteRequested) {
-				tileShouldScrollTop = tilesComponent.state.currentRouteTileShouldScrollToTop;
+			if (tileRoute === tilesComponent.state.lastRouteRequested && tilesComponent.state.currentRouteTileShouldScrollToTop) {
+				tileShouldScrollTop = true;
 			}
 
 			if (tilesComponent.state.previousRouteTileShouldScrollToTop && index === tilesComponent.state.tileRange[1] && topTileContentLoaded) {
@@ -178,6 +183,7 @@ let TileHolder = React.createClass({
 			}
 
 			return (<Tile tileIndex={index} 
+						  newPageReset={tilesComponent.props.routeIgnored == null}
 						  route={tileRoute} 
 						  content={tileContent} 
 						  tileExpanded= {tileContent != null || tileSingleTile || tileAccessedDirectly}
@@ -188,7 +194,8 @@ let TileHolder = React.createClass({
 						  nextRouteDown={tilesComponent.state.nextRouteDown}
 						  nextRouteUp={tilesComponent.state.nextRouteUp}
 						  lastRouteTriggeredPendingRef={tilesComponent._lastRouteTriggeredPending}
-						  goToRouteDirectlyRef={tilesComponent._onGoToRouteDirectly} />);
+						  goToRouteDirectlyRef={tilesComponent._onGoToRouteDirectly}
+						  onTileVisibilityChangeRef={tilesComponent._onTileVisibilityChange} />);
 
 		});
 

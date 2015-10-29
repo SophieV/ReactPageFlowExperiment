@@ -16,6 +16,7 @@ let _store = {
   lastRouteRequestedBelow: null,
   lastRouteRequestedAbove: null,
   lastRouteRequested: null,
+  lastRouteWasNew: false,
   routeAccessedDirectlyFromContent: null,
   nextRouteUp: null,
   nextRouteDown: null,
@@ -105,7 +106,7 @@ let updateNavigationInfo = function(requestedRoute) {
   _store.lastRouteRequested = requestedRoute;
 
   _store.nextRouteDown = findNextAvailableRoute(_store.lastRouteRequestedBelow, true);
-  _store.nextRouteUp = findNextAvailableRoute(_store.lastRouteRequestedAbove, false);
+  _store.nextRouteUp = findNextAvailableRoute((_store.lastRouteRequestedAbove!=null?_store.lastRouteRequestedAbove:_store.firstRoute), false);
 }
 
 let resetStore = function () {
@@ -116,6 +117,7 @@ let resetStore = function () {
     _store.lastRouteRequestedBelow = null;
     _store.lastRouteRequestedAbove = null;
     _store.lastRouteRequested = null;
+    _store.lastRouteWasNew = false;
     _store.routeAccessedDirectlyFromContent = null;
     _store.nextRouteDown = null;
     _store.nextRouteUp = null;
@@ -129,6 +131,11 @@ let ignoreRoute = function(routeToIgnore) {
 
 let updateFirstRoute = function(route) {
   _store.firstRoute = route;
+  _store.lastRouteWasNew = true;
+}
+
+let updateWhetherNewRoute = function(isNew) {
+  _store.lastRouteWasNew = isNew;
 }
 
 let tilesStore = objectAssign({}, EventEmitter.prototype, {
@@ -158,7 +165,7 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
   },
   scrollingDetectionTopEnabled: function() {
     // else the scrolling will immediately add a tile up
-    return (_store.nextRouteUp != null && _store.firstRoute != _store.lastRouteRequested);
+    return (_store.nextRouteUp != null && (_store.lastRouteRequested != _store.firstRoute || (_store.lastRouteRequested === _store.firstRoute && !_store.lastRouteWasNew)));
   },
   scrollingDetectionBottomEnabled: function() {
     return (_store.nextRouteDown != null);
@@ -176,14 +183,14 @@ let tilesStore = objectAssign({}, EventEmitter.prototype, {
     return false;
   },
   currentRouteTileShouldScrollToTop: function() {
-    return (_store.lastRouteRequested === _store.firstRoute || _store.lastRouteRequested == _store.routeAccessedDirectlyFromContent);
+    return (_store.lastRouteRequested === _store.firstRoute && _store.mapTileToRoute.length === 1 || _store.lastRouteRequested == _store.routeAccessedDirectlyFromContent);
   },
   previousRouteTileShouldScrollToTop: function() {
     let lastRouteRequestedMapping = _.findWhere(_store.mapTileToRoute, {route: _store.lastRouteRequested});
 
     let lastRouteRequestedIsTop = lastRouteRequestedMapping != null && lastRouteRequestedMapping.tileIndex === _store.minTileIndex;
 
-    return lastRouteRequestedIsTop;
+    return lastRouteRequestedIsTop && _store.lastRouteWasNew;
   }
 });
 
@@ -194,12 +201,14 @@ AppDispatcher.register(function(payload)
   {
     case actionsConstants.ADD_TILE_DOWN:
       ignoreRoute(action.data);
+      updateWhetherNewRoute(true);
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }
     break;
     case actionsConstants.ADD_TILE_UP:
       ignoreRoute(action.data);
+      updateWhetherNewRoute(true);
       if (addTile(action.data, false)) {
           tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }
@@ -207,12 +216,14 @@ AppDispatcher.register(function(payload)
     case actionsConstants.ADD_FIRST_TILE:
       resetStore();
       updateFirstRoute(action.data);
+      
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }
     break;
     case actionsConstants.GO_TO_ROUTE:
       accessRouteDirectly(action.data);
+      updateWhetherNewRoute(true);
       ignoreRoute(action.data);
 
       if (addTile(action.data, true)) {
@@ -222,6 +233,14 @@ AppDispatcher.register(function(payload)
     case actionsConstants.GO_TO_EXISTING_ROUTE:
       accessRouteDirectly(action.data);
       ignoreRoute(action.data);
+      updateWhetherNewRoute(false);
+      updateNavigationInfo(action.data);
+
+      tilesStore.emit(eventsConstants.CHANGE_EVENT);
+    break;
+    case actionsConstants.ROUTE_BEING_VIEWED:
+      ignoreRoute(action.data);
+      updateWhetherNewRoute(false);
       updateNavigationInfo(action.data);
 
       tilesStore.emit(eventsConstants.CHANGE_EVENT);

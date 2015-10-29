@@ -48,6 +48,12 @@ var tilesActions = {
       actionType: actionsConstants.GO_TO_EXISTING_ROUTE,
       data: route
     });
+  },
+  routeBeingViewed: function(route){
+    AppDispatcher.handleAction({
+      actionType: actionsConstants.ROUTE_BEING_VIEWED,
+      data: route
+    });
   }
 };
 
