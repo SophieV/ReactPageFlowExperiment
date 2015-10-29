@@ -2,13 +2,13 @@ let
   React = require('react'),
   $ = require('jquery'),
   _ = require('underscore'),
-  tilesStore = require('./tilesStore'),
-  contentStore = require('./contentStore'),
-  contentActions = require('./contentActions'),
-  tilesActions = require('./tilesActions'),
-  Tile = require('./Tile.jsx');
+  tilesStore = require('../fluxStores/tilesStore'),
+  contentStore = require('../fluxStores/contentStore'),
+  contentActions = require('../fluxStores/contentActions'),
+  tilesActions = require('../fluxStores/tilesActions'),
+  Tile = require('./RouteTile.jsx');
 
-  import history from './history'
+  import history from '../history'
 
 function getTileHolderState(props) {
   return {
@@ -27,7 +27,7 @@ function getTileHolderState(props) {
   };
 }
 
-let TileHolder = React.createClass({
+let RouteTilesManager = React.createClass({
 	getInitialState: function(){
 		return getTileHolderState(this.props);
 	},
@@ -155,6 +155,8 @@ let TileHolder = React.createClass({
 			console.log('action still undergoing: ' + this._lastRouteTriggeredPending);
 		}
 
+		console.log('tile range is : ' + this.state.tileRange);
+
 		let tilesComponent = this;
 
 		let tiles = _.map(tilesComponent.state.tileRange, function(index) {
@@ -209,4 +211,4 @@ let TileHolder = React.createClass({
 	}
 });
 
-module.exports = TileHolder;
+module.exports = RouteTilesManager;

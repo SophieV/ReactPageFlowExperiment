@@ -1,14 +1,14 @@
 let
   React = require('react'),
-  JumpButton = require('./JumpButton.jsx'),
-  PageHome = require('./PageHome.jsx'),
-  PageWork = require('./PageWork.jsx'),
-  PageDefault = require('./PageDefault.jsx'),
+  JumpButton = require('../UiElements/JumpButton.jsx'),
+  PageHome = require('../PageViews/PageHome.jsx'),
+  PageWork = require('../PageViews/PageWork.jsx'),
+  PageDefault = require('../PageViews/PageDefault.jsx'),
   $ = require('jquery'),
   _ = require('underscore'),
   VisibilitySensor = require('react-visibility-sensor');
 
-let Tile = React.createClass({
+let RouteTile = React.createClass({
 	_consoleLogTileInfo: function(message) {
 		console.log('[' + this.props.tileIndex + ':' + this.props.route + '] ' + message);
 	},
@@ -16,11 +16,16 @@ let Tile = React.createClass({
 		this._positionRestore = 0;
 		this._visible = false;
 		this._lastRouteScrolledBack = null;
+		this._toggleVisibilitySensor(false);
 	},
 	componentWillUpdate: function() {
 		this._positionRestore = this.getDOMNode().offsetTop;
+		this._toggleVisibilitySensor(false);
 	},
 	componentDidUpdate: function() {
+		this._consoleLogTileInfo("i received still ongoing action : " + this.props.lastRouteTriggeredPendingRef);
+		this._toggleVisibilitySensor(!this.props.lastRouteTriggeredPendingRef);
+
 		if (this.props.scrollBackToMe && (this._lastRouteScrolledBack !== this.props.route || this.props.newPageReset)) {
 			// the scrolling should happen once, not every time some value of the state received has changed
 			$(window).scrollTop(this._positionRestore);
@@ -28,6 +33,10 @@ let Tile = React.createClass({
 			this._positionRestore = 0;
 			this._lastRouteScrolledBack = this.props.route;
 		}
+	},
+	_toggleVisibilitySensor: function(active) {
+		VisibilitySensor.active = active;
+		this._consoleLogTileInfo("visibility sensor is active : " + VisibilitySensor.active);
 	},
 	_onMarkerVisibilityChange: function(isVisible) {
 		if (!this.props.lastRouteTriggeredPendingRef && isVisible !== this._visible) {
@@ -139,4 +148,4 @@ let Tile = React.createClass({
 	}
 });
 
-module.exports = Tile;
+module.exports = RouteTile;

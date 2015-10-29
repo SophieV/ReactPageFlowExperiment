@@ -1,20 +1,14 @@
-let
-  App = {};
-  App.config = require('./config.js');
-
-  App.views = {};
-
 import React from 'react'
 import { Router, Route, Link } from 'react-router'
 import history from './history'
 
-App.views.MainContainer = require('./MainContainer.jsx');
-App.views.Tiles = require('./Tiles.jsx');
+let MainContainer = require('./LayoutSkeleton/MainContainer.jsx');
+let RouteTilesManager = require('./RoutesCarousel/RouteTilesManager.jsx');
 
 let routes = (
   <Router history={history}>
-    <Route path="/" component={App.views.MainContainer}>
-      <Route path="*" component={App.views.Tiles}/>
+    <Route path="/" component={MainContainer}>
+      <Route path="*" component={RouteTilesManager}/>
     </Route>
   </Router>
 );
