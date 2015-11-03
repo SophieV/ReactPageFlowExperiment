@@ -5,6 +5,10 @@ let
 import { Router, Route, Link } from 'react-router'
 
 var PageHome = React.createClass({
+  propTypes: {
+    contentReady: React.PropTypes.bool.isRequired,
+    content: React.PropTypes.string.isRequired
+  },
   render: function() {
   	let contentArea;
 
@@ -19,11 +23,10 @@ var PageHome = React.createClass({
   		contentArea = (<div dangerouslySetInnerHTML={this.props.content}></div>);
   	}
 
-    return (
-    	<div className="page-data">
-	      {contentArea}
-	    </div>
-    );
+    return (<div className="page-data">
+      	      {contentArea}
+      	    </div>
+          );
   }
 });
 

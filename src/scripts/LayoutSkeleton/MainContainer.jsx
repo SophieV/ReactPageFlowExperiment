@@ -11,20 +11,22 @@ let MainContainer = React.createClass({
 	//         })
 	//     }.bind(this))
 	//   },//{this._renderChildren()}
+	propTypes: {
+		children: React.PropTypes.element
+	},
 	render: function() {
-		return (
-			<div className="main-container">
-				<div className="navigation-bar">
-					<p>
-					  <NavigationItem currentRoute={this.props.location.pathname} routeValue="/home" routeLabel="Home"/>&nbsp;&nbsp;
-			          <NavigationItem currentRoute={this.props.location.pathname} routeValue="/work" routeLabel="Work"/>
-			        </p>
-				</div>
-				<div className="data-content">
-					{this.props.children || "Welcome to the site"}
-				</div>
-			</div>
-		);
+		return (<div className="main-container">
+							<div className="navigation-bar">
+								<p>
+								  <NavigationItem currentRoute={this.props.location.pathname} routeValue="/home" routeLabel="Home"/>&nbsp;&nbsp;
+						      <NavigationItem currentRoute={this.props.location.pathname} routeValue="/work" routeLabel="Work"/>
+						    </p>
+							</div>
+							<div className="data-content">
+								{this.props.children || "Welcome to the site"}
+							</div>
+						</div>
+					);
 	}
 });
 
