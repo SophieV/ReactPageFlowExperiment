@@ -7,7 +7,7 @@ import { Router, Route, Link } from 'react-router'
 var PageHome = React.createClass({
   propTypes: {
     contentReady: React.PropTypes.bool.isRequired,
-    content: React.PropTypes.string.isRequired
+    content: React.PropTypes.object.isRequired
   },
   render: function() {
   	let contentArea;

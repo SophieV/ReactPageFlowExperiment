@@ -10,8 +10,10 @@ let
 
   import history from '../history'
 
-function getTileHolderState() {
+function getTileHolderState(lastRouteTriggeredPendingValue, previousRouteRequestedValue) {
   return {
+  lastRouteTriggeredPending: lastRouteTriggeredPendingValue,
+  previousRouteRequested: previousRouteRequestedValue,
 	tilesIndexRange: _.range(tilesStore.minTileIndex(), tilesStore.maxTileIndex() + 1),
 	mapTileToRoute: tilesStore.mapTileToRoute(),
 	lastRouteRequested: tilesStore.lastRouteRequested(),
@@ -29,35 +31,40 @@ function getTileHolderState() {
 
 let RouteTilesManager = React.createClass({
   propTypes: {
-    initDone: React.PropTypes.bool,
-    lastBrowserRoute: React.PropTypes.string,
-    lastRouteTriggeredPending: React.PropTypes.bool,
     UPPER_THRESHOLD: React.PropTypes.number
   },
   getDefaultProps: function() {
     return {
-      initDone: false,
-      lastBrowserRoute: null,
-      lastRouteTriggeredPending: false,
       UPPER_THRESHOLD: 50 //px
     };
   },
 	getInitialState: function(){
-		return getTileHolderState();
+		return getTileHolderState(false, null);
 	},
 	componentDidMount: function(){
 		tilesStore.addChangeListener(this._onTilesInfoChanged);
-		// warning message of too many event listeners if located in Tile
 		contentStore.addChangeListener(this._onContentDataChanged);
 
-		this._onRouteMayHaveChanged();
+		this._onRouteMayHaveChanged(true);
 	},
 	componentDidUpdate: function() {
-		this._onRouteMayHaveChanged();
+		if (!this.state.lastRouteTriggeredPending) {
+      this._onRouteMayHaveChanged(false);
+    } else {
+      if (this.state.lastRouteRequested != null) {
+        let actionStillUnderWork = (contentStore.routeContent(this.state.lastRouteRequested) == null);
+        console.log('action still undergoing: ' + actionStillUnderWork);
+
+        if (this.state.lastRouteTriggeredPending !== actionStillUnderWork) {
+          this.setState({lastRouteTriggeredPending : actionStillUnderWork});
+        }
+      }
+    }
 	},
   componentWillUnmount: function(){
     tilesStore.removeChangeListener(this._onTilesInfoChanged);
     contentStore.removeChangeListener(this._onContentDataChanged);
+    this.context.router.getLocation().removeChangeListener(this._onRouteMayHaveChanged);
   },
 	_updateRouteDisplayedToUser: function(routeValue){
 		history.replaceState(null, routeValue);
@@ -65,20 +72,17 @@ let RouteTilesManager = React.createClass({
 	_onRouteMayHaveChanged: function(init){
 		let browserUrl = this.props.location.pathname;
 
-		if (!this.props.initDone || browserUrl !== this.props.lastBrowserRoute && browserUrl !== this.state.routeIgnored) {
-			this.props.initDone = true;
+		if (init === true || browserUrl !== this.state.lastRouteRequested && browserUrl !== this.state.routeIgnored && browserUrl !== this.state.previousRouteRequested) {
 			tilesActions.addFirstTile(browserUrl);
 		}
-
-		this.props.lastBrowserRoute = browserUrl;
 	},
 	_onTilesInfoChanged: function(){
-		let newState = getTileHolderState();
+		let newState = getTileHolderState(this.state.lastRouteTriggeredPending, this.state.lastRouteRequested);
     	this.setState(newState);
 
     	let browserUrl = this.props.location.pathname;
 
-    	if (this.props.initDone && browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored) {
+    	if (browserUrl !== newState.lastRouteRequested && newState.lastRouteRequested === newState.routeIgnored) {
     		this._updateRouteDisplayedToUser(newState.routeIgnored);
     	}
 	},
@@ -106,7 +110,7 @@ let RouteTilesManager = React.createClass({
 	      	let $appContainer = $('#app');
 
 	      	window.onscroll = function() {
-		      	if (tilesComponent.state.scrollingDetectionEnabled && !tilesComponent.props.lastRouteTriggeredPending) {
+		      	if (tilesComponent.state.scrollingDetectionEnabled && !tilesComponent.state.lastRouteTriggeredPending) {
 
 			      	let thisScrollTop = Math.round($(this).scrollTop()),
 			            thisInnerHeight = Math.round($(this).innerHeight()),
@@ -122,18 +126,18 @@ let RouteTilesManager = React.createClass({
 			        	{
 			        		console.log("reaching bottom of page.");
 
-			        		tilesComponent.props.lastRouteTriggeredPending = true;
+			        		tilesComponent.setState({lastRouteTriggeredPending : true, previousRouteRequested: tilesComponent.state.lastRouteRequested, lastRouteRequested: tilesComponent.state.nextRouteDown});
 
 			        		tilesActions.addTileDown(tilesComponent.state.nextRouteDown);
 			        	}
 			        }
-			        else if(thisScrollTop < this.props.UPPER_THRESHOLD)
+			        else if(thisScrollTop < tilesComponent.props.UPPER_THRESHOLD)
 			        {
 			        	if (tilesComponent.state.scrollingDetectionTopEnabled)
 			        	{
 			        		console.log("reaching top of page.");
 
-			        		tilesComponent.props.lastRouteTriggeredPending = true;
+			        		tilesComponent.setState({lastRouteTriggeredPending : true, previousRouteRequested: tilesComponent.state.lastRouteRequested, lastRouteRequested: tilesComponent.state.nextRouteUp});
 
 			        		tilesActions.addTileUp(tilesComponent.state.nextRouteUp);
 			        	}
@@ -156,12 +160,6 @@ let RouteTilesManager = React.createClass({
 
 		if (this.state.tilesIndexRange.length > 0) {
 			topTileContentLoaded = (contentStore.routeContent(_.findWhere(this.state.mapTileToRoute, {tileIndex: this.state.tilesIndexRange[0]}).route) != null);
-		}
-
-		if (this.state.lastRouteRequested != null) {
-			// make sure that the variable is refreshed for all the tiles - else there could a situation where the state hold in each of the tiles varies
-			this.props.lastRouteTriggeredPending = (contentStore.routeContent(this.state.lastRouteRequested) == null);
-			console.log('action still undergoing: ' + this.props.lastRouteTriggeredPending);
 		}
 
 		console.log('tile range is : ' + this.state.tilesIndexRange);
@@ -190,10 +188,11 @@ let RouteTilesManager = React.createClass({
 
 			if (tilesComponent.state.previousRouteTileShouldScrollToTop && index === tilesComponent.state.tilesIndexRange[1] && topTileContentLoaded) {
 				// scroll only once the content of the tile above has been loaded - it's what's causing the jump in the page
-				tileShouldScrollTop = true;
+				// tileShouldScrollTop = true;
 			}
 
-			return (<Tile tileIndex={index}
+			return (<Tile key={index}
+                    tileIndex={index}
       						  isNewPageReset={tilesComponent.state.routeIgnored == null}
       						  route={tileRoute}
       						  content={tileContent}
@@ -204,7 +203,7 @@ let RouteTilesManager = React.createClass({
       						  isScrolledTo={tileShouldScrollTop}
       						  nextRouteDown={tilesComponent.state.nextRouteDown}
       						  nextRouteUp={tilesComponent.state.nextRouteUp}
-      						  lastRouteTriggeredPending={tilesComponent.props.lastRouteTriggeredPending}
+      						  lastRouteTriggeredPending={tilesComponent.state.lastRouteTriggeredPending}
       						  handleGoToRouteDirectlyClick={tilesComponent._handleGoToRouteDirectlyClick}
       						  handleTileVisibilityChange={tilesComponent._handleTileVisibilityChange} />);
 

@@ -6,14 +6,9 @@ import { Router, Route, Link } from 'react-router'
 
 var JumpButton = React.createClass({
   propTypes: {
-    rangeMin: React.PropTypes.number,
-    rangeMax: React.PropTypes.number
-  },
-  getDefaultProps: function() {
-    return {
-      rangeMin: -10,
-      rangeMax: 10
-    };
+    rangeMin: React.PropTypes.number.isRequired,
+    rangeMax: React.PropTypes.number.isRequired,
+    handleGoToRouteDirectlyClick: React.PropTypes.func.isRequired
   },
   getInitialState: function(){
     return {
@@ -21,7 +16,7 @@ var JumpButton = React.createClass({
     }
   },
   _handleClick: function(event) {
-    this.props.goToRouteDirectlyRef("/" + this.state.randomValue);
+    this.props.handleGoToRouteDirectlyClick("/" + this.state.randomValue);
   },
   render: function() {
     // do not use a Link because it will update the route in the browser before the click is handled

@@ -13,7 +13,7 @@ let RouteTile = React.createClass({
     tileIndex: React.PropTypes.number.isRequired,
     isNewPageReset: React.PropTypes.boolean,
     route: React.PropTypes.string.isRequired,
-    content: React.PropTypes.string.isRequired,
+    content: React.PropTypes.object.isRequired,
     isExpanded: React.PropTypes.bool.isRequired,
     isFirstTile: React.PropTypes.bool.isRequired,
     isLastTile: React.PropTypes.bool.isRequired,
@@ -59,7 +59,7 @@ let RouteTile = React.createClass({
   },
 	_toggleVisibilitySensor: function(active) {
 		VisibilitySensor.active = active;
-		this._consoleLogTileInfo("visibility sensor is active : " + VisibilitySensor.active);
+		// this._consoleLogTileInfo("visibility sensor is active : " + VisibilitySensor.active);
 	},
 	_handleMarkerVisibilityChange: function(isVisible) {
 		if (!this.props.lastRouteTriggeredPending && isVisible !== this.props.isVisible) {

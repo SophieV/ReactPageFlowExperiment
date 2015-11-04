@@ -32,11 +32,11 @@ let findNextAvailableRoute = function(previousRoute, directionBelow) {
         if (directionBelow) {
             if (previousRoute == "/home") {
               route = "/work";
-            } 
+            }
         } else {
             if (previousRoute == "/work") {
               route = "/home";
-            } 
+            }
         }
     }
 
@@ -49,9 +49,9 @@ let findNextAvailableRoute = function(previousRoute, directionBelow) {
         if (directionBelow) {
             _store.nextFakeAvailableRouteToLoad++;
         } else {
-           _store.nextFakeAvailableRouteToLoad--; 
+           _store.nextFakeAvailableRouteToLoad--;
         }
-        
+
         if (_.findWhere(_store.mapTileToRoute, {route: "/" + _store.nextFakeAvailableRouteToLoad}) == null) {
           routeNotRenderedYet = true;
           route = "/" + _store.nextFakeAvailableRouteToLoad;
@@ -75,7 +75,7 @@ let addTile = function(requestedRoute, directionBelow) {
           } else {
             _store.maxTileIndex++;
           }
-          
+
           _store.mapTileToRoute.push({tileIndex: _store.maxTileIndex, route: requestedRoute});
           _store.lastRouteRequestedBelow = requestedRoute;
           console.log('adding tile [' + _store.maxTileIndex + ':' + requestedRoute + ']');
@@ -216,7 +216,7 @@ AppDispatcher.register(function(payload)
     case actionsConstants.ADD_FIRST_TILE:
       resetStore();
       updateFirstRoute(action.data);
-      
+
       if (addTile(action.data, true)) {
         tilesStore.emit(eventsConstants.CHANGE_EVENT);
       }
