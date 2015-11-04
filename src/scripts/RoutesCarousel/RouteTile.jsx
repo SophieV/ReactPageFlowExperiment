@@ -23,35 +23,37 @@ let RouteTile = React.createClass({
     nextRouteDown: React.PropTypes.string.isRequired,
     lastRouteTriggeredPending: React.PropTypes.string.isRequired,
     handleGoToRouteDirectlyClick: React.PropTypes.func.isRequired,
-    handleTileVisibilityChange: React.PropTypes.func.isRequired,
-    positionRestore: React.PropTypes.number,
-    isVisible: React.PropTypes.bool,
-    lastRouteScrolledBack: React.PropTypes.string
-  },
-  getDefaultProps: function() {
-    return {
-      positionRestore: 0,
-      isVisible: false,
-      lastRouteScrolledBack: null
-    };
+    handleTileVisibilityChange: React.PropTypes.func.isRequired
   },
 	componentDidMount: function() {
 		this._toggleVisibilitySensor(false);
+
+    // props cannot be modified
+    this._positionRestore = 0;
+    this._isVisible = false;
+    this._lastRouteScrolledBack = null;
 	},
 	componentWillUpdate: function() {
-		this.props.positionRestore = this.getDOMNode().offsetTop;
+    this._positionRestore = this.getDOMNode().offsetTop;
 		this._toggleVisibilitySensor(false);
 	},
 	componentDidUpdate: function() {
-		this._consoleLogTileInfo("i received still ongoing action : " + this.props.lastRouteTriggeredPending);
+		// this._consoleLogTileInfo("i received still ongoing action : " + this.props.lastRouteTriggeredPending);
 		this._toggleVisibilitySensor(!this.props.lastRouteTriggeredPending);
 
-		if (this.props.isScrolledTo && (this.props.lastRouteScrolledBack !== this.props.route || this.props.isNewPageReset)) {
+		if (this.props.isScrolledTo && (this._lastRouteScrolledBack !== this.props.route || this.props.isNewPageReset)) {
+      if (this.props.isNewPageReset) {
+        this._positionRestore = 0;
+      } else {
+        // add height of new tile's Content
+        //this._positionRestore+= 4000;
+      }
+
 			// the scrolling should happen once, not every time some value of the state received has changed
-			$(window).scrollTop(this.props.positionRestore);
+			$(window).scrollTop(this._positionRestore);
 			this._consoleLogTileInfo('scrolled window to me');
-			this.props.positionRestore = 0;
-			this.props.lastRouteScrolledBack = this.props.route;
+			this._positionRestore = 0;
+			this._lastRouteScrolledBack = this.props.route;
 		}
 	},
   _consoleLogTileInfo: function(message) {
@@ -62,11 +64,11 @@ let RouteTile = React.createClass({
 		// this._consoleLogTileInfo("visibility sensor is active : " + VisibilitySensor.active);
 	},
 	_handleMarkerVisibilityChange: function(isVisible) {
-		if (!this.props.lastRouteTriggeredPending && isVisible !== this.props.isVisible) {
-			this.props.isVisible = isVisible;
+		if (!this.props.lastRouteTriggeredPending && isVisible !== this._isVisible) {
+			this._isVisible = isVisible;
 
 			if (isVisible) {
-				this._consoleLogTileInfo('one of the markers now ' + (isVisible ? 'visible' : 'hidden'));
+				// this._consoleLogTileInfo('one of the markers now ' + (isVisible ? 'visible' : 'hidden'));
 				this.props.handleTileVisibilityChange(this.props.route);
 			}
 		}

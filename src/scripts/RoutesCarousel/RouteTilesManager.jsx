@@ -4,11 +4,29 @@ let
   _ = require('underscore'),
   tilesStore = require('../fluxStores/tilesStore'),
   contentStore = require('../fluxStores/contentStore'),
-  contentActions = require('../fluxStores/contentActions'),
   tilesActions = require('../fluxStores/tilesActions'),
   Tile = require('./RouteTile.jsx');
 
   import history from '../history'
+
+function getEmptyTileHolderState() {
+  return {
+  lastRouteTriggeredPending: false,
+  previousRouteRequested: null,
+	tilesIndexRange: [],
+	mapTileToRoute: null,
+	lastRouteRequested: null,
+	routeAccessedDirectlyFromContent: null,
+	routeIgnored: null,
+	scrollingDetectionTopEnabled: false,
+	scrollingDetectionBottomEnabled: false,
+	scrollingDetectionEnabled: false,
+	nextRouteDown: null,
+	nextRouteUp: null,
+	currentRouteTileShouldScrollToTop: false,
+	previousRouteTileShouldScrollToTop: false
+  };
+}
 
 function getTileHolderState(lastRouteTriggeredPendingValue, previousRouteRequestedValue) {
   return {
@@ -39,9 +57,18 @@ let RouteTilesManager = React.createClass({
     };
   },
 	getInitialState: function(){
-		return getTileHolderState(false, null);
+		return getEmptyTileHolderState();
 	},
-	componentDidMount: function(){
+  componentWillMount: function(){
+    if (this.props.initialData !== undefined) {
+      console.log('i am server-side.');
+      // TODO : set state from initialData info received
+      this.setState({tilesIndexRange: [0]});
+    } else {
+      console.log('i am client-side');
+    }
+  },
+  componentDidMount: function(){
 		tilesStore.addChangeListener(this._onTilesInfoChanged);
 		contentStore.addChangeListener(this._onContentDataChanged);
 
@@ -159,10 +186,11 @@ let RouteTilesManager = React.createClass({
 		topTileContentLoaded = false;
 
 		if (this.state.tilesIndexRange.length > 0) {
+      // TODO : move this call or make sure server-side does not hit it
 			topTileContentLoaded = (contentStore.routeContent(_.findWhere(this.state.mapTileToRoute, {tileIndex: this.state.tilesIndexRange[0]}).route) != null);
 		}
 
-		console.log('tile range is : ' + this.state.tilesIndexRange);
+		// console.log('tile range is : ' + this.state.tilesIndexRange);
 
 		let tilesComponent = this;
 
@@ -188,7 +216,7 @@ let RouteTilesManager = React.createClass({
 
 			if (tilesComponent.state.previousRouteTileShouldScrollToTop && index === tilesComponent.state.tilesIndexRange[1] && topTileContentLoaded) {
 				// scroll only once the content of the tile above has been loaded - it's what's causing the jump in the page
-				// tileShouldScrollTop = true;
+				tileShouldScrollTop = true;
 			}
 
 			return (<Tile key={index}
